@@ -1,11 +1,6 @@
 import connexion
 from models.job import Job
 from models.job_step import JobStep
-from models.new_job_request import NewJobRequest
-from datetime import date, datetime
-from typing import List, Dict
-from six import iteritems
-from ..util import deserialize_date, deserialize_datetime
 
 
 def add_step(tenant_id, job_id, job_step):

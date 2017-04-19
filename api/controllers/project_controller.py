@@ -1,11 +1,6 @@
 import connexion
+from elasticsearch import Elasticsearch
 from models.project import Project
-from models.projects import Projects
-from datetime import date, datetime
-from typing import List, Dict
-from six import iteritems
-from ..util import deserialize_date, deserialize_datetime
-from elasticsearch import Elasticsearch, TransportError
 
 ES = Elasticsearch('http://elasticsearch:9200')
 INDEX_NAME = 'kingpick'

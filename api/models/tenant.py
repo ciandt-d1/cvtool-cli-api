@@ -1,12 +1,11 @@
 # coding: utf-8
 
 from __future__ import absolute_import
+
 from models.settings import Settings
-import re
+
+from api.util import deserialize_model
 from .base_model_ import Model
-from datetime import date, datetime
-from typing import List, Dict
-from ..util import deserialize_model
 
 
 class Tenant(Model):
