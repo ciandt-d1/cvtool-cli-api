@@ -1,0 +1,502 @@
+---
+swagger: "2.0"
+info:
+  description: "Provides APIs for tenant maintenance"
+  version: "0.1.0"
+  title: "Kingpick Admin API"
+host: "kingpick-admin-api.endpoints.ciandt-cognitive-sandbox.cloud.goog"
+basePath: "/v1"
+schemes:
+- "https"
+produces:
+- "application/json"
+paths:
+  /setup:
+    post:
+      description: "Setup basic infrastructure"
+      operationId: "setup"
+      parameters: []
+      responses:
+        200:
+          description: "Setup basic infrastructure"
+      x-swagger-router-controller: "kingpick.controllers.default_controller"
+  /auth/token:
+    get:
+      tags:
+      - "auth"
+      description: "Generate a new authentication token"
+      operationId: "token"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "Kingpick access token"
+          schema:
+            type: "string"
+      security:
+      - google_id_token: []
+      x-swagger-router-controller: "kingpick.controllers.auth_controller"
+  /tenants:
+    get:
+      tags:
+      - "tenant"
+      description: "List all tenants"
+      operationId: "get_tenants"
+      produces:
+      - "application/json"
+      parameters: []
+      responses:
+        200:
+          description: "Tenant list"
+          schema:
+            $ref: "#/definitions/Tenants"
+      x-swagger-router-controller: "kingpick.controllers.tenant_controller"
+    post:
+      tags:
+      - "tenant"
+      description: "Creates a new tenant"
+      operationId: "post_tenant"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "tenant"
+        description: "Tenant to create"
+        required: true
+        schema:
+          $ref: "#/definitions/Tenant"
+      responses:
+        201:
+          description: "The newly craeted tenant"
+          schema:
+            $ref: "#/definitions/Tenant"
+      x-swagger-router-controller: "kingpick.controllers.tenant_controller"
+  /tenants/{tenant_id}:
+    get:
+      tags:
+      - "tenant"
+      description: "get a specific tenant"
+      operationId: "get_tenant"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "tenant_id"
+        in: "path"
+        description: "tenant id"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Tenant list"
+          schema:
+            $ref: "#/definitions/Tenant"
+      x-swagger-router-controller: "kingpick.controllers.tenant_controller"
+    put:
+      tags:
+      - "tenant"
+      description: "updates a tenant"
+      operationId: "put_tenant"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "tenant_id"
+        in: "path"
+        description: "tenant id"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "tenant"
+        description: "Tenant to update"
+        required: true
+        schema:
+          $ref: "#/definitions/Tenant"
+      responses:
+        200:
+          description: "The newly craeted tenant"
+          schema:
+            $ref: "#/definitions/Tenant"
+      x-swagger-router-controller: "kingpick.controllers.tenant_controller"
+  /projects:
+    get:
+      tags:
+      - "project"
+      description: "List all projects"
+      operationId: "list_projects"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "tenant_id"
+        in: "query"
+        description: "tenant id"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "Project list"
+          schema:
+            $ref: "#/definitions/Projects"
+      x-swagger-router-controller: "kingpick.controllers.project_controller"
+    post:
+      tags:
+      - "project"
+      summary: "Creates a new project"
+      description: "Creates a new project return the project."
+      operationId: "create_project"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "tenant_id"
+        in: "query"
+        description: "tenant id"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "project"
+        description: "Project to create"
+        required: true
+        schema:
+          $ref: "#/definitions/Project"
+      responses:
+        201:
+          description: "The newly created project"
+          schema:
+            $ref: "#/definitions/Project"
+      x-swagger-router-controller: "kingpick.controllers.project_controller"
+  /projects/{project_id}:
+    get:
+      tags:
+      - "project"
+      description: "get a specific project"
+      operationId: "get_project"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "tenant_id"
+        in: "query"
+        description: "tenant id"
+        required: true
+        type: "string"
+      - name: "project_id"
+        in: "path"
+        description: "project id"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "A project"
+          schema:
+            $ref: "#/definitions/Project"
+      x-swagger-router-controller: "kingpick.controllers.project_controller"
+    put:
+      tags:
+      - "project"
+      description: "updates a project"
+      operationId: "put_project"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "tenant_id"
+        in: "query"
+        description: "tenant id"
+        required: true
+        type: "string"
+      - name: "project_id"
+        in: "path"
+        description: "project id"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "project"
+        description: "Project to update"
+        required: true
+        schema:
+          $ref: "#/definitions/Project"
+      responses:
+        200:
+          description: "The newly created project"
+          schema:
+            $ref: "#/definitions/Project"
+      x-swagger-router-controller: "kingpick.controllers.project_controller"
+  /jobs:
+    post:
+      tags:
+      - "job"
+      description: "Adds an image signature to the database."
+      operationId: "create"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "tenant_id"
+        in: "query"
+        description: "tenant id"
+        required: true
+        type: "string"
+      - name: "project_id"
+        in: "query"
+        description: "project id"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "new_job_request"
+        description: "new job request"
+        required: true
+        schema:
+          $ref: "#/definitions/Job"
+      responses:
+        201:
+          description: "The newly created image"
+          schema:
+            $ref: "#/definitions/NewJobRequest"
+      x-swagger-router-controller: "kingpick.controllers.job_controller"
+  /jobs/{job_id}:
+    get:
+      tags:
+      - "job"
+      description: "Adds an image signature to the database."
+      operationId: "get"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "tenant_id"
+        in: "query"
+        description: "tenant id"
+        required: true
+        type: "string"
+      - name: "job_id"
+        in: "path"
+        description: "job id"
+        required: true
+        type: "string"
+      responses:
+        200:
+          description: "The newly created image"
+          schema:
+            $ref: "#/definitions/Job"
+      x-swagger-router-controller: "kingpick.controllers.job_controller"
+  /jobs/{job_id}/steps:
+    post:
+      tags:
+      - "job"
+      description: "Adds an image signature to the database."
+      operationId: "add_step"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "tenant_id"
+        in: "query"
+        description: "tenant id"
+        required: true
+        type: "string"
+      - name: "job_id"
+        in: "path"
+        description: "job id"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "job_step"
+        description: "job step"
+        required: true
+        schema:
+          $ref: "#/definitions/JobStep"
+      responses:
+        200:
+          description: "The newly created image"
+      x-swagger-router-controller: "kingpick.controllers.job_controller"
+  /jobs/{job_id}/start:
+    post:
+      tags:
+      - "job"
+      description: "Flag the job as started"
+      operationId: "start_job"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "tenant_id"
+        in: "query"
+        description: "tenant id"
+        required: true
+        type: "string"
+      - name: "job_id"
+        in: "path"
+        description: "job id"
+        required: true
+        type: "string"
+      responses:
+        202:
+          description: "The newly created image"
+      x-swagger-router-controller: "kingpick.controllers.job_controller"
+  /jobs/{job_id}/end:
+    post:
+      tags:
+      - "job"
+      description: "Flag the job as finished"
+      operationId: "end_job"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "tenant_id"
+        in: "query"
+        description: "tenant id"
+        required: true
+        type: "string"
+      - name: "job_id"
+        in: "path"
+        description: "job id"
+        required: true
+        type: "string"
+      responses:
+        202:
+          description: "The newly created image"
+      x-swagger-router-controller: "kingpick.controllers.job_controller"
+securityDefinitions:
+  google_id_token:
+    type: "oauth2"
+    authorizationUrl: ""
+    flow: "implicit"
+    x-google-issuer: "accounts.google.com"
+    x-google-jwks_uri: "https://www.googleapis.com/oauth2/v1/certs"
+    x-google-audiences:
+    - "764086051850-6qr4p6gpi6hn506pt8ejuq83di341hur.apps.googleusercontent.com"
+    - "1019062845561-ncr4dtvcshrrlg68nofsbmfnc7mf3g81.apps.googleusercontent.com"
+definitions:
+  Tenants:
+    properties:
+      items:
+        type: "array"
+        uniqueItems: true
+        items:
+          $ref: "#/definitions/Tenant"
+  Tenant:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        minLength: 3
+        maxLength: 64
+        pattern: "[a-z0-9-_\\.]{3,64}"
+        x-regex: "[a-z0-9-_\\\\.]{3,64}"
+        x-modifiers: []
+      name:
+        type: "string"
+      description:
+        type: "string"
+      settings:
+        $ref: "#/definitions/Settings"
+  Settings:
+    type: "object"
+    additionalProperties:
+      type: "string"
+  Projects:
+    properties:
+      items:
+        type: "array"
+        uniqueItems: true
+        items:
+          $ref: "#/definitions/Project"
+  Project:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+      name:
+        type: "string"
+      description:
+        type: "string"
+      settings:
+        $ref: "#/definitions/Settings"
+  Job:
+    type: "object"
+    properties:
+      job_id:
+        type: "string"
+        description: "Job id."
+      version:
+        type: "string"
+        description: "doc version"
+      type:
+        type: "string"
+        description: "Job type"
+      status:
+        type: "string"
+        description: "Job status"
+      exit_status:
+        type: "string"
+        description: "Job exit status code"
+      exit_message:
+        type: "string"
+        description: "Job exit status message"
+      create_time:
+        type: "string"
+        format: "date-time"
+        description: "Job creation time"
+      start_time:
+        type: "string"
+        format: "date-time"
+        description: "Job start time"
+      end_time:
+        type: "string"
+        format: "date-time"
+        description: "Job end time"
+      last_updated:
+        type: "string"
+        format: "date-time"
+        description: "Job last update"
+      created_by:
+        type: "string"
+        description: "Job creator"
+      parameters:
+        $ref: "#/definitions/JobInputParameters"
+  JobInputParameters:
+    type: "object"
+    additionalProperties:
+      type: "string"
+  NewJobRequest:
+    type: "object"
+    properties:
+      type:
+        type: "string"
+        description: "Job type"
+        enum:
+        - "csv"
+        - "flickr"
+      auto_start:
+        type: "boolean"
+        description: "create job and start ?"
+        default: false
+      parameters:
+        $ref: "#/definitions/JobInputParameters"
+  JobStep:
+    type: "object"
+    properties:
+      job_id:
+        type: "string"
+        description: "Job id."
+      version:
+        type: "string"
+        description: "doc version"
+      status:
+        type: "string"
+        description: "Job status"
+      exit_status:
+        type: "string"
+        description: "Job exit status code"
+      exit_message:
+        type: "string"
+        description: "Job exit status message"
+      create_time:
+        type: "string"
+        format: "date-time"
+        description: "Job creation time"
+      start_time:
+        type: "string"
+        format: "date-time"
+        description: "Job start time"
+      end_time:
+        type: "string"
+        format: "date-time"
+        description: "Job end time"
+      last_updated:
+        type: "string"
+        format: "date-time"
+        description: "Job last update"
