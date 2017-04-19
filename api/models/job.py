@@ -4,7 +4,7 @@ from __future__ import absolute_import
 
 from datetime import datetime
 
-from models.job_input_parameters import JobInputParameters
+from .job_input_parameters import JobInputParameters
 
 from api.util import deserialize_model
 from .base_model_ import Model
