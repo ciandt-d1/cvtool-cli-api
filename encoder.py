@@ -1,6 +1,6 @@
 from connexion.decorators import produces
 from six import iteritems
-from kingpick.models.base_model_ import Model
+from models.base_model_ import Model
 
 
 class JSONEncoder(produces.JSONEncoder):
