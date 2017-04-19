@@ -3,7 +3,7 @@
 import connexion
 from kingpick.encoder import JSONEncoder
 
-app = connexion.App(__name__, specification_dir='./kingpick/swagger/')
+app = connexion.App(__name__, specification_dir='./swagger/')
 app.app.json_encoder = JSONEncoder
 app.add_api('swagger.yaml', arguments={'title': 'Provides APIs for tenant maintenance'})
 
