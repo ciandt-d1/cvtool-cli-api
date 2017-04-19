@@ -1,6 +1,6 @@
 import connexion
-from kingpick.models.project import Project
-from kingpick.models.projects import Projects
+from models.project import Project
+from models.projects import Projects
 from datetime import date, datetime
 from typing import List, Dict
 from six import iteritems

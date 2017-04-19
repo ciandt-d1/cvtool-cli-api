@@ -1,6 +1,6 @@
 import connexion
-from kingpick.models.tenant import Tenant
-from kingpick.models.tenants import Tenants
+from models.tenant import Tenant
+from models.tenants import Tenants
 from datetime import date, datetime
 from typing import List, Dict
 from six import iteritems

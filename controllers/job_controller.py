@@ -1,7 +1,7 @@
 import connexion
-from kingpick.models.job import Job
-from kingpick.models.job_step import JobStep
-from kingpick.models.new_job_request import NewJobRequest
+from models.job import Job
+from models.job_step import JobStep
+from models.new_job_request import NewJobRequest
 from datetime import date, datetime
 from typing import List, Dict
 from six import iteritems
