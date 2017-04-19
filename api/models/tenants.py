@@ -4,7 +4,7 @@ from __future__ import absolute_import
 
 from typing import List
 
-from api.models.tenant import Tenant
+from .tenant import Tenant
 from api.util import deserialize_model
 from .base_model_ import Model
 

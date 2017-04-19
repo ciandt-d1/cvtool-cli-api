@@ -2,7 +2,7 @@
 
 from __future__ import absolute_import
 
-from models.settings import Settings
+from .settings import Settings
 
 from api.util import deserialize_model
 from .base_model_ import Model

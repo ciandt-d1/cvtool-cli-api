@@ -4,7 +4,7 @@ from __future__ import absolute_import
 
 from typing import List
 
-from models.project import Project
+from .project import Project
 
 from api.util import deserialize_model
 from .base_model_ import Model
