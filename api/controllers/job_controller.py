@@ -1,6 +1,6 @@
 import connexion
-from models.job import Job
-from models.job_step import JobStep
+from api.models.job import Job
+from api.models.job_step import JobStep
 
 
 def add_step(tenant_id, job_id, job_step):

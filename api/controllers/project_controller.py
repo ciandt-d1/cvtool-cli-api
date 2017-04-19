@@ -1,6 +1,6 @@
 import connexion
 from elasticsearch import Elasticsearch
-from models.project import Project
+from api.models.project import Project
 
 ES = Elasticsearch('http://elasticsearch:9200')
 INDEX_NAME = 'kingpick'

@@ -1,6 +1,6 @@
 import connexion
 from elasticsearch import Elasticsearch, TransportError
-from models.tenants import Tenants
+from api.models.tenants import Tenants
 
 from api.models.tenant import Tenant
 
