@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import connexion
-from kingpick.encoder import JSONEncoder
+from encoder import JSONEncoder
 
 app = connexion.App(__name__, specification_dir='./swagger/')
 app.app.json_encoder = JSONEncoder
