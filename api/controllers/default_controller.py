@@ -1,7 +1,12 @@
-from elasticsearch import Elasticsearch
+import connexion
+from datetime import date, datetime
+from typing import List, Dict
+from six import iteritems
+from ..util import deserialize_date, deserialize_datetime
+from elasticsearch import Elasticsearch, TransportError
 
 ES = Elasticsearch('http://elasticsearch:9200')
-INDEX_NAME = 'kingpick'
+INDEX_NAME = 'api'
 TENANT_DOC_TYPE = 'tenant'
 
 def setup():

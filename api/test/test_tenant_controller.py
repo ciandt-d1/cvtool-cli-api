@@ -2,10 +2,11 @@
 
 from __future__ import absolute_import
 
-from flask import json
-
 from api.models.tenant import Tenant
+from api.models.tenants import Tenants
 from . import BaseTestCase
+from six import BytesIO
+from flask import json
 
 
 class TestTenantController(BaseTestCase):

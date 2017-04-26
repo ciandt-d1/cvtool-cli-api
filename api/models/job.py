@@ -1,13 +1,11 @@
 # coding: utf-8
 
 from __future__ import absolute_import
-
-from datetime import datetime
-
-from .job_input_parameters import JobInputParameters
-
-from api.util import deserialize_model
+from api.models.job_input_parameters import JobInputParameters
 from .base_model_ import Model
+from datetime import date, datetime
+from typing import List, Dict
+from ..util import deserialize_model
 
 
 class Job(Model):

@@ -12,7 +12,7 @@ DEBUG = os.getenv('DEBUG', False)
 es_tracer = logging.getLogger('elasticsearch.trace')
 es_tracer.propagate = False
 es_tracer.setLevel(logging.DEBUG)
-es_tracer_handler = logging.StreamHandler()
+es_tracer_handler=logging.StreamHandler()
 es_tracer.addHandler(es_tracer_handler)
 
 if __name__ == '__main__':
