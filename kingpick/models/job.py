@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from __future__ import absolute_import
-from api.models.job_input_parameters import JobInputParameters
+from kingpick.models.job_input_parameters import JobInputParameters
 from .base_model_ import Model
 from datetime import date, datetime
 from typing import List, Dict

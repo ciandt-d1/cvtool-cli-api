@@ -1,6 +1,6 @@
 import connexion
-from api.models.tenant import Tenant
-from api.models.tenants import Tenants
+from kingpick.models.tenant import Tenant
+from kingpick.models.tenants import Tenants
 from datetime import date, datetime
 from typing import List, Dict
 from six import iteritems
@@ -9,7 +9,7 @@ from elasticsearch import Elasticsearch, TransportError
 
 
 ES = Elasticsearch('http://elasticsearch:9200')
-INDEX_NAME = 'api'
+INDEX_NAME = 'kingpick'
 TENANT_DOC_TYPE = 'tenant'
 
 def get_tenant(tenant_id):

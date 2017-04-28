@@ -2,8 +2,8 @@
 
 from __future__ import absolute_import
 
-from api.models.project import Project
-from api.models.projects import Projects
+from kingpick.models.project import Project
+from kingpick.models.projects import Projects
 from . import BaseTestCase
 from six import BytesIO
 from flask import json

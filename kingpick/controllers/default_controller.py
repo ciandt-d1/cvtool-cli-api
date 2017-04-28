@@ -6,7 +6,7 @@ from ..util import deserialize_date, deserialize_datetime
 from elasticsearch import Elasticsearch, TransportError
 
 ES = Elasticsearch('http://elasticsearch:9200')
-INDEX_NAME = 'api'
+INDEX_NAME = 'kingpick'
 TENANT_DOC_TYPE = 'tenant'
 
 def setup():
