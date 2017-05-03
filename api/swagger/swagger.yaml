@@ -387,9 +387,7 @@ securityDefinitions:
     flow: "implicit"
     x-google-issuer: "accounts.google.com"
     x-google-jwks_uri: "https://www.googleapis.com/oauth2/v1/certs"
-    x-google-audiences:
-    - "764086051850-6qr4p6gpi6hn506pt8ejuq83di341hur.apps.googleusercontent.com"
-    - "1019062845561-ncr4dtvcshrrlg68nofsbmfnc7mf3g81.apps.googleusercontent.com"
+    x-google-audiences: "764086051850-6qr4p6gpi6hn506pt8ejuq83di341hur.apps.googleusercontent.com,1019062845561-ncr4dtvcshrrlg68nofsbmfnc7mf3g81.apps.googleusercontent.com"
 definitions:
   ImageRequest:
     type: "object"
