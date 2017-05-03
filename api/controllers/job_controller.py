@@ -7,9 +7,9 @@ import connexion
 from elasticsearch import Elasticsearch, TransportError
 from six import iteritems
 
-from api.models.job import Job
-from api.models.job_step import JobStep
-from api.models.new_job_request import NewJobRequest
+from api.representations.job import Job
+from api.representations.job_step import JobStep
+from api.representations.new_job_request import NewJobRequest
 
 from ..domain.job import JobData, JobRepository
 from ..util import deserialize_date, deserialize_datetime

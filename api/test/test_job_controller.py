@@ -2,9 +2,9 @@
 
 from __future__ import absolute_import
 
-from kingpick.models.job import Job
-from kingpick.models.job_step import JobStep
-from kingpick.models.new_job_request import NewJobRequest
+from swagger_server.models.job import Job
+from swagger_server.models.job_step import JobStep
+from swagger_server.models.new_job_request import NewJobRequest
 from . import BaseTestCase
 from six import BytesIO
 from flask import json

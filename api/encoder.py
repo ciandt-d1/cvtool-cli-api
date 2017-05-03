@@ -1,6 +1,6 @@
 from connexion.decorators import produces
 from six import iteritems
-from api.models.base_model_ import Model
+from api.representations.base_model_ import Model
 
 
 class JSONEncoder(produces.JSONEncoder):

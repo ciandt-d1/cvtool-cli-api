@@ -1,6 +1,6 @@
 import connexion
-from api.models.project import Project
-from api.models.projects import Projects
+from api.representations.project import Project
+from api.representations.projects import Projects
 from datetime import date, datetime
 from typing import List, Dict
 from six import iteritems

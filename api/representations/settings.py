@@ -27,7 +27,7 @@ class Settings(Model):
 
 
     @classmethod
-    def from_dict(cls, dikt) -> 'Settings':
+    def from_dict(cls, dikt):
         """
         Returns the dict as a model
 
