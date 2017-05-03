@@ -1,6 +1,6 @@
 import connexion
-from swagger_server.models.image_request import ImageRequest
-from swagger_server.models.image_response import ImageResponse
+from api.representations.image_request import ImageRequest
+from api.representations.image_response import ImageResponse
 from datetime import date, datetime
 from typing import List, Dict
 from six import iteritems
