@@ -1,7 +1,7 @@
 import connexion
-from swagger_server.models.job import Job
-from swagger_server.models.job_step import JobStep
-from swagger_server.models.new_job_request import NewJobRequest
+from api.models.job import Job
+from api.models.job_step import JobStep
+from api.models.new_job_request import NewJobRequest
 from datetime import date, datetime
 from typing import List, Dict
 from six import iteritems
@@ -29,7 +29,7 @@ def add_step(tenant_id, job_id, job_step):
 def create(tenant_id, project_id, new_job_request):
     """
     create
-    Adds an new job.
+    Adds an image signature to the database.
     :param tenant_id: tenant id
     :type tenant_id: str
     :param project_id: project id
@@ -37,10 +37,10 @@ def create(tenant_id, project_id, new_job_request):
     :param new_job_request: new job request
     :type new_job_request: dict | bytes
 
-    :rtype: Job
+    :rtype: NewJobRequest
     """
     if connexion.request.is_json:
-        new_job_request = NewJobRequest.from_dict(connexion.request.get_json())
+        new_job_request = Job.from_dict(connexion.request.get_json())
     return 'do some magic!'
 
 

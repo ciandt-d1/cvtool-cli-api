@@ -27,7 +27,7 @@ class JobInputParameters(Model):
 
 
     @classmethod
-    def from_dict(cls, dikt) -> 'JobInputParameters':
+    def from_dict(cls, dikt):
         """
         Returns the dict as a model
 

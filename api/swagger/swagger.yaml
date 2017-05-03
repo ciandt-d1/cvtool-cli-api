@@ -19,7 +19,7 @@ paths:
       responses:
         200:
           description: "Setup basic infrastructure"
-      x-swagger-router-controller: "swagger_server.controllers.default_controller"
+      x-swagger-router-controller: "api.controllers.default_controller"
   /auth/token:
     get:
       tags:
@@ -36,7 +36,7 @@ paths:
             type: "string"
       security:
       - google_id_token: []
-      x-swagger-router-controller: "swagger_server.controllers.auth_controller"
+      x-swagger-router-controller: "api.controllers.auth_controller"
   images:
     post:
       tags:
@@ -67,7 +67,7 @@ paths:
           description: "The newly created image"
           schema:
             $ref: "#/definitions/ImageResponse"
-      x-swagger-router-controller: "swagger_server.controllers.image_controller"
+      x-swagger-router-controller: "api.controllers.image_controller"
   /tenants:
     get:
       tags:
@@ -82,7 +82,7 @@ paths:
           description: "Tenant list"
           schema:
             $ref: "#/definitions/Tenants"
-      x-swagger-router-controller: "swagger_server.controllers.tenant_controller"
+      x-swagger-router-controller: "api.controllers.tenant_controller"
     post:
       tags:
       - "tenant"
@@ -102,7 +102,7 @@ paths:
           description: "The newly craeted tenant"
           schema:
             $ref: "#/definitions/Tenant"
-      x-swagger-router-controller: "swagger_server.controllers.tenant_controller"
+      x-swagger-router-controller: "api.controllers.tenant_controller"
   /tenants/{tenant_id}:
     get:
       tags:
@@ -122,7 +122,7 @@ paths:
           description: "Tenant list"
           schema:
             $ref: "#/definitions/Tenant"
-      x-swagger-router-controller: "swagger_server.controllers.tenant_controller"
+      x-swagger-router-controller: "api.controllers.tenant_controller"
     put:
       tags:
       - "tenant"
@@ -147,7 +147,7 @@ paths:
           description: "The newly craeted tenant"
           schema:
             $ref: "#/definitions/Tenant"
-      x-swagger-router-controller: "swagger_server.controllers.tenant_controller"
+      x-swagger-router-controller: "api.controllers.tenant_controller"
   /projects:
     get:
       tags:
@@ -167,7 +167,7 @@ paths:
           description: "Project list"
           schema:
             $ref: "#/definitions/Projects"
-      x-swagger-router-controller: "swagger_server.controllers.project_controller"
+      x-swagger-router-controller: "api.controllers.project_controller"
     post:
       tags:
       - "project"
@@ -193,7 +193,7 @@ paths:
           description: "The newly created project"
           schema:
             $ref: "#/definitions/Project"
-      x-swagger-router-controller: "swagger_server.controllers.project_controller"
+      x-swagger-router-controller: "api.controllers.project_controller"
   /projects/{project_id}:
     get:
       tags:
@@ -218,7 +218,7 @@ paths:
           description: "A project"
           schema:
             $ref: "#/definitions/Project"
-      x-swagger-router-controller: "swagger_server.controllers.project_controller"
+      x-swagger-router-controller: "api.controllers.project_controller"
     put:
       tags:
       - "project"
@@ -248,7 +248,7 @@ paths:
           description: "The newly created project"
           schema:
             $ref: "#/definitions/Project"
-      x-swagger-router-controller: "swagger_server.controllers.project_controller"
+      x-swagger-router-controller: "api.controllers.project_controller"
   /jobs:
     post:
       tags:
@@ -279,7 +279,7 @@ paths:
           description: "The newly created Job"
           schema:
             $ref: "#/definitions/Job"
-      x-swagger-router-controller: "swagger_server.controllers.job_controller"
+      x-swagger-router-controller: "api.controllers.job_controller"
   /jobs/{job_id}:
     get:
       tags:
@@ -304,7 +304,7 @@ paths:
           description: "The newly created image"
           schema:
             $ref: "#/definitions/Job"
-      x-swagger-router-controller: "swagger_server.controllers.job_controller"
+      x-swagger-router-controller: "api.controllers.job_controller"
   /jobs/{job_id}/steps:
     post:
       tags:
@@ -333,7 +333,7 @@ paths:
       responses:
         200:
           description: "The newly created image"
-      x-swagger-router-controller: "swagger_server.controllers.job_controller"
+      x-swagger-router-controller: "api.controllers.job_controller"
   /jobs/{job_id}/start:
     post:
       tags:
@@ -356,7 +356,7 @@ paths:
       responses:
         202:
           description: "The newly created image"
-      x-swagger-router-controller: "swagger_server.controllers.job_controller"
+      x-swagger-router-controller: "api.controllers.job_controller"
   /jobs/{job_id}/end:
     post:
       tags:
@@ -379,7 +379,7 @@ paths:
       responses:
         202:
           description: "The newly created image"
-      x-swagger-router-controller: "swagger_server.controllers.job_controller"
+      x-swagger-router-controller: "api.controllers.job_controller"
 securityDefinitions:
   google_id_token:
     type: "oauth2"

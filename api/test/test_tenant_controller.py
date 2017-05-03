@@ -2,8 +2,8 @@
 
 from __future__ import absolute_import
 
-from swagger_server.models.tenant import Tenant
-from swagger_server.models.tenants import Tenants
+from api.models.tenant import Tenant
+from api.models.tenants import Tenants
 from . import BaseTestCase
 from six import BytesIO
 from flask import json
