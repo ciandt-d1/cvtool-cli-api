@@ -37,7 +37,7 @@ paths:
       security:
       - google_id_token: []
       x-swagger-router-controller: "api.controllers.auth_controller"
-  images:
+  /images:
     post:
       tags:
       - "image"

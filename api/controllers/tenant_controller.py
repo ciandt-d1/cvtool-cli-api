@@ -1,6 +1,6 @@
 import connexion
-from api.models.tenant import Tenant
-from api.models.tenants import Tenants
+from api.representations.tenant import Tenant
+from api.representations.tenants import Tenants
 from datetime import date, datetime
 from typing import List, Dict
 from six import iteritems
