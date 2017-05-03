@@ -1,16 +1,11 @@
 import connexion
-from api.models.tenant import Tenant
-from api.models.tenants import Tenants
+from swagger_server.models.tenant import Tenant
+from swagger_server.models.tenants import Tenants
 from datetime import date, datetime
 from typing import List, Dict
 from six import iteritems
 from ..util import deserialize_date, deserialize_datetime
-from elasticsearch import Elasticsearch, TransportError
 
-
-ES = Elasticsearch('http://elasticsearch:9200')
-INDEX_NAME = 'api'
-TENANT_DOC_TYPE = 'tenant'
 
 def get_tenant(tenant_id):
     """
@@ -21,12 +16,7 @@ def get_tenant(tenant_id):
 
     :rtype: Tenant
     """
-
-    try:
-        hit = ES.get_source(index=INDEX_NAME, id=tenant_id, doc_type=TENANT_DOC_TYPE)
-        return Tenant.from_dict(hit)
-    except TransportError as tp:
-        return tp.info, tp.status_code
+    return 'do some magic!'
 
 
 def get_tenants():
@@ -36,18 +26,13 @@ def get_tenants():
 
     :rtype: Tenants
     """
-    hits = ES.search(index=INDEX_NAME, doc_type=TENANT_DOC_TYPE, version=True)
-    tenants = list(map(lambda hit: Tenant.from_dict(hit.get('_source')), hits.get('hits', { 'hits': [] }).get('hits')))
-    return Tenants(items=tenants)
+    return 'do some magic!'
 
 
 def post_tenant(tenant):
     """
     post_tenant
     Creates a new tenant
-
-    https://www.elastic.co/guide/en/elasticsearch/guide/current/faking-it.html
-
     :param tenant: Tenant to create
     :type tenant: dict | bytes
 
@@ -55,18 +40,8 @@ def post_tenant(tenant):
     """
     if connexion.request.is_json:
         tenant = Tenant.from_dict(connexion.request.get_json())
-        ES.create(index=INDEX_NAME, doc_type=TENANT_DOC_TYPE, id=tenant.id, body=tenant.to_dict())
-        alias_name = tenant.id
-        alias_cfg = {
-            "routing": tenant.id,
-            "filter": {
-                "term": {
-                    "tenant_id": tenant.id
-                }
-            }
-        }
-        ES.indices.put_alias(index=INDEX_NAME, name=alias_name, body=alias_cfg)
-        return tenant, 201
+    return 'do some magic!'
+
 
 def put_tenant(tenant_id, tenant):
     """

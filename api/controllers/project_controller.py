@@ -1,14 +1,10 @@
 import connexion
-from api.models.project import Project
-from api.models.projects import Projects
+from swagger_server.models.project import Project
+from swagger_server.models.projects import Projects
 from datetime import date, datetime
 from typing import List, Dict
 from six import iteritems
 from ..util import deserialize_date, deserialize_datetime
-from elasticsearch import Elasticsearch, TransportError
-
-ES = Elasticsearch('http://elasticsearch:9200')
-INDEX_NAME = 'api'
 
 
 def create_project(tenant_id, project):
@@ -23,30 +19,9 @@ def create_project(tenant_id, project):
     :rtype: Project
     """
     if connexion.request.is_json:
-        project_json = connexion.request.get_json()
-        project = Project.from_dict(project_json)
-        project_dict = project.to_dict()
-        project_dict['tenant_id'] = tenant_id
-        ES.create(index=tenant_id, doc_type='project', id=project.id, body=project_dict)
-        return project, 201
-
-
-def put_project(tenant_id, project_id, project):
-    """
-    put_project
-    updates a project
-    :param tenant_id: tenant id
-    :type tenant_id: str
-    :param project_id: project id
-    :type project_id: str
-    :param project: Project to update
-    :type project: dict | bytes
-
-    :rtype: Project
-    """
-    if connexion.request.is_json:
         project = Project.from_dict(connexion.request.get_json())
     return 'do some magic!'
+
 
 def get_project(tenant_id, project_id):
     """
@@ -71,4 +46,22 @@ def list_projects(tenant_id):
 
     :rtype: Projects
     """
+    return 'do some magic!'
+
+
+def put_project(tenant_id, project_id, project):
+    """
+    put_project
+    updates a project
+    :param tenant_id: tenant id
+    :type tenant_id: str
+    :param project_id: project id
+    :type project_id: str
+    :param project: Project to update
+    :type project: dict | bytes
+
+    :rtype: Project
+    """
+    if connexion.request.is_json:
+        project = Project.from_dict(connexion.request.get_json())
     return 'do some magic!'

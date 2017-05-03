@@ -2,6 +2,9 @@
 
 from __future__ import absolute_import
 # import models into model package
+from .annotation import Annotation
+from .image_request import ImageRequest
+from .image_response import ImageResponse
 from .job import Job
 from .job_input_parameters import JobInputParameters
 from .job_step import JobStep

@@ -19,7 +19,7 @@ paths:
       responses:
         200:
           description: "Setup basic infrastructure"
-      x-swagger-router-controller: "kingpick.controllers.default_controller"
+      x-swagger-router-controller: "swagger_server.controllers.default_controller"
   /auth/token:
     get:
       tags:
@@ -36,7 +36,38 @@ paths:
             type: "string"
       security:
       - google_id_token: []
-      x-swagger-router-controller: "kingpick.controllers.auth_controller"
+      x-swagger-router-controller: "swagger_server.controllers.auth_controller"
+  images:
+    post:
+      tags:
+      - "image"
+      description: "Adds an image signature to the database."
+      operationId: "add"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "tenant_id"
+        in: "query"
+        description: "tenant id"
+        required: true
+        type: "string"
+      - name: "project_id"
+        in: "query"
+        description: "project id"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "image_request"
+        description: "Image to create"
+        required: true
+        schema:
+          $ref: "#/definitions/ImageRequest"
+      responses:
+        201:
+          description: "The newly created image"
+          schema:
+            $ref: "#/definitions/ImageResponse"
+      x-swagger-router-controller: "swagger_server.controllers.image_controller"
   /tenants:
     get:
       tags:
@@ -51,7 +82,7 @@ paths:
           description: "Tenant list"
           schema:
             $ref: "#/definitions/Tenants"
-      x-swagger-router-controller: "kingpick.controllers.tenant_controller"
+      x-swagger-router-controller: "swagger_server.controllers.tenant_controller"
     post:
       tags:
       - "tenant"
@@ -71,7 +102,7 @@ paths:
           description: "The newly craeted tenant"
           schema:
             $ref: "#/definitions/Tenant"
-      x-swagger-router-controller: "kingpick.controllers.tenant_controller"
+      x-swagger-router-controller: "swagger_server.controllers.tenant_controller"
   /tenants/{tenant_id}:
     get:
       tags:
@@ -91,7 +122,7 @@ paths:
           description: "Tenant list"
           schema:
             $ref: "#/definitions/Tenant"
-      x-swagger-router-controller: "kingpick.controllers.tenant_controller"
+      x-swagger-router-controller: "swagger_server.controllers.tenant_controller"
     put:
       tags:
       - "tenant"
@@ -116,7 +147,7 @@ paths:
           description: "The newly craeted tenant"
           schema:
             $ref: "#/definitions/Tenant"
-      x-swagger-router-controller: "kingpick.controllers.tenant_controller"
+      x-swagger-router-controller: "swagger_server.controllers.tenant_controller"
   /projects:
     get:
       tags:
@@ -136,7 +167,7 @@ paths:
           description: "Project list"
           schema:
             $ref: "#/definitions/Projects"
-      x-swagger-router-controller: "kingpick.controllers.project_controller"
+      x-swagger-router-controller: "swagger_server.controllers.project_controller"
     post:
       tags:
       - "project"
@@ -162,7 +193,7 @@ paths:
           description: "The newly created project"
           schema:
             $ref: "#/definitions/Project"
-      x-swagger-router-controller: "kingpick.controllers.project_controller"
+      x-swagger-router-controller: "swagger_server.controllers.project_controller"
   /projects/{project_id}:
     get:
       tags:
@@ -187,7 +218,7 @@ paths:
           description: "A project"
           schema:
             $ref: "#/definitions/Project"
-      x-swagger-router-controller: "kingpick.controllers.project_controller"
+      x-swagger-router-controller: "swagger_server.controllers.project_controller"
     put:
       tags:
       - "project"
@@ -217,12 +248,12 @@ paths:
           description: "The newly created project"
           schema:
             $ref: "#/definitions/Project"
-      x-swagger-router-controller: "kingpick.controllers.project_controller"
+      x-swagger-router-controller: "swagger_server.controllers.project_controller"
   /jobs:
     post:
       tags:
       - "job"
-      description: "Adds an image signature to the database."
+      description: "Adds an new job."
       operationId: "create"
       produces:
       - "application/json"
@@ -242,13 +273,13 @@ paths:
         description: "new job request"
         required: true
         schema:
-          $ref: "#/definitions/Job"
+          $ref: "#/definitions/NewJobRequest"
       responses:
         201:
-          description: "The newly created image"
+          description: "The newly created Job"
           schema:
-            $ref: "#/definitions/NewJobRequest"
-      x-swagger-router-controller: "kingpick.controllers.job_controller"
+            $ref: "#/definitions/Job"
+      x-swagger-router-controller: "swagger_server.controllers.job_controller"
   /jobs/{job_id}:
     get:
       tags:
@@ -273,7 +304,7 @@ paths:
           description: "The newly created image"
           schema:
             $ref: "#/definitions/Job"
-      x-swagger-router-controller: "kingpick.controllers.job_controller"
+      x-swagger-router-controller: "swagger_server.controllers.job_controller"
   /jobs/{job_id}/steps:
     post:
       tags:
@@ -302,7 +333,7 @@ paths:
       responses:
         200:
           description: "The newly created image"
-      x-swagger-router-controller: "kingpick.controllers.job_controller"
+      x-swagger-router-controller: "swagger_server.controllers.job_controller"
   /jobs/{job_id}/start:
     post:
       tags:
@@ -325,7 +356,7 @@ paths:
       responses:
         202:
           description: "The newly created image"
-      x-swagger-router-controller: "kingpick.controllers.job_controller"
+      x-swagger-router-controller: "swagger_server.controllers.job_controller"
   /jobs/{job_id}/end:
     post:
       tags:
@@ -348,7 +379,7 @@ paths:
       responses:
         202:
           description: "The newly created image"
-      x-swagger-router-controller: "kingpick.controllers.job_controller"
+      x-swagger-router-controller: "swagger_server.controllers.job_controller"
 securityDefinitions:
   google_id_token:
     type: "oauth2"
@@ -360,6 +391,35 @@ securityDefinitions:
     - "764086051850-6qr4p6gpi6hn506pt8ejuq83di341hur.apps.googleusercontent.com"
     - "1019062845561-ncr4dtvcshrrlg68nofsbmfnc7mf3g81.apps.googleusercontent.com"
 definitions:
+  ImageRequest:
+    type: "object"
+    properties:
+      job_id:
+        type: "string"
+        description: "Job id."
+      original_uri:
+        type: "string"
+        description: "The image to add to the database."
+      annotations:
+        $ref: "#/definitions/Annotation"
+  Annotation:
+    type: "object"
+    additionalProperties:
+      type: "string"
+  ImageResponse:
+    type: "object"
+    properties:
+      id:
+        type: "string"
+        description: "Image id."
+      job_id:
+        type: "string"
+        description: "Job id."
+      original_uri:
+        type: "string"
+        description: "The image to add to the database."
+      annotations:
+        $ref: "#/definitions/Annotation"
   Tenants:
     properties:
       items:
@@ -405,10 +465,29 @@ definitions:
         type: "string"
       settings:
         $ref: "#/definitions/Settings"
+  NewJobRequest:
+    type: "object"
+    properties:
+      type:
+        type: "string"
+        description: "Job type"
+        enum:
+        - "csv"
+        - "flickr"
+      auto_start:
+        type: "boolean"
+        description: "create job and start ?"
+        default: false
+      input_params:
+        $ref: "#/definitions/JobInputParameters"
+  JobInputParameters:
+    type: "object"
+    additionalProperties:
+      type: "string"
   Job:
     type: "object"
     properties:
-      job_id:
+      id:
         type: "string"
         description: "Job id."
       version:
@@ -445,26 +524,7 @@ definitions:
       created_by:
         type: "string"
         description: "Job creator"
-      parameters:
-        $ref: "#/definitions/JobInputParameters"
-  JobInputParameters:
-    type: "object"
-    additionalProperties:
-      type: "string"
-  NewJobRequest:
-    type: "object"
-    properties:
-      type:
-        type: "string"
-        description: "Job type"
-        enum:
-        - "csv"
-        - "flickr"
-      auto_start:
-        type: "boolean"
-        description: "create job and start ?"
-        default: false
-      parameters:
+      input_params:
         $ref: "#/definitions/JobInputParameters"
   JobStep:
     type: "object"

@@ -1,7 +1,7 @@
 # coding: utf-8
 
 from __future__ import absolute_import
-from api.models.settings import Settings
+from swagger_server.models.settings import Settings
 import re
 from .base_model_ import Model
 from datetime import date, datetime
