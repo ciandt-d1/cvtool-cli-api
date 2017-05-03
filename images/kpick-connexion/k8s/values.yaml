@@ -1,0 +1,23 @@
+swaggerServerApi:
+  replicaCount: 1
+  cloudEndpoints:
+    service: kingpick-swagger-server-api
+    version: 2017-03-17r2
+  image:
+    name: kingpick/swagger-server-api
+    tag: latest
+
+  ## Auth resource requests and limits
+  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ##
+  resources:
+    # limits:
+    #   cpu: 10m
+    #   memory: 32Mi
+    requests:
+      cpu: 10m
+      memory: 32Mi
+
+  ## Auth API service type
+  ##
+  serviceType: NodePort
