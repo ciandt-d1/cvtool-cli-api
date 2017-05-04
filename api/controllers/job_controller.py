@@ -1,24 +1,18 @@
 import logging
 
-from datetime import date, datetime
-from typing import Dict, List
-
 import connexion
-from elasticsearch import Elasticsearch, TransportError
-from six import iteritems
+from elasticsearch import Elasticsearch
 
 from api.representations.job import Job
 from api.representations.job_step import JobStep
-from api.representations.new_job_request import NewJobRequest
-
 from ..domain.job import JobData, JobRepository
-from ..util import deserialize_date, deserialize_datetime
 
 logger = logging.getLogger(__name__)
 
 INDEX_NAME = 'kingpick'
 ES = Elasticsearch('http://elasticsearch:9200')
 job_repository = JobRepository(ES, INDEX_NAME)
+
 
 def create(tenant_id, project_id, new_job_request):
     """
@@ -37,8 +31,7 @@ def create(tenant_id, project_id, new_job_request):
     if connexion.request.is_json:
         job = JobData(new_job_request, strict=False)
         job = job_repository.save(tenant_id, project_id, job)
-
-    return Job.from_dict(job.flatten())
+        return Job.from_dict(job.flatten())
 
 
 def end_job(tenant_id, job_id):
@@ -52,7 +45,11 @@ def end_job(tenant_id, job_id):
 
     :rtype: None
     """
-    return 'do some magic!'
+
+    job = job_repository.get_by_id(tenant_id, job_id)
+    job.end()
+    job = job_repository.save(tenant_id, None, job)
+    return Job.from_dict(job.flatten())
 
 
 def get(tenant_id, job_id):
@@ -66,7 +63,8 @@ def get(tenant_id, job_id):
 
     :rtype: Job
     """
-    return 'do some magic!'
+    job = job_repository.get_by_id(tenant_id, job_id)
+    return Job.from_dict(job.flatten())
 
 
 def start_job(tenant_id, job_id):
@@ -80,7 +78,12 @@ def start_job(tenant_id, job_id):
 
     :rtype: None
     """
-    return 'do some magic!'
+
+    job = job_repository.get_by_id(tenant_id, job_id)
+    job.start()
+    job = job_repository.save(tenant_id, None, job)
+    return Job.from_dict(job.flatten())
+
 
 def add_step(tenant_id, job_id, job_step):
     """

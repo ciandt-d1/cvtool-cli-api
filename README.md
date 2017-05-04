@@ -100,6 +100,12 @@ curl -X POST "localhost:8082/v1/image-hashes/search?tenant_id=acme&project_id=pr
     "all_orientations": true
 }'
 
+curl -X POST "localhost:8081/v1/jobs?tenant_id=acme&project_id=project-x" -H "Content-Type:application/json" -d '{
+    "type": "csv",
+    "auto_start": true
+}'
+
+
 curl -X POST "localhost:8082/v1/image-hashes/search?tenant_id=acme&project_id=project-x" -H "Content-Type:application/json" -d '{
     "url": "https://lh3.googleusercontent.com/P1-JR5ZNo5TBo3ZlwFR-WsgxFZn6UiLlaRdzSlJuvah5PpcyOKOR8QgZlx6xRRMH7jMVFcH-IdLpQ0EQ5rk50GY=c0xffff0000-b20-r90",
     "all_orientations": true
