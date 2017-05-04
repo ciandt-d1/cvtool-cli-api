@@ -28,6 +28,10 @@ def add(tenant_id, project_id, image_request):
 
     if connexion.request.is_json:
         image = ImageData(image_request, strict=False)
-        image = image_repository.save(tenant_id, project_id, image)
+
+        if image_repository.get_by_original_uri(tenant_id, image.original_uri) is None:
+            image = image_repository.save(tenant_id, project_id, image)
+        else:
+            return None
 
     return ImageResponse.from_dict(image.flatten())

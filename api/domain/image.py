@@ -36,6 +36,14 @@ class ImageRepository(object):
         except TransportError as tp:
             logger.exception('Error')
 
+    def get_by_original_uri(self, tenant_id, original_uri):
+        try:
+            hit = self.es.get(index=tenant_id, original_uri=original_uri, doc_type=ImageData.Meta.doc_type)
+            image = ImageData(hit)
+            return image
+        except TransportError as tp:
+            logger.exception('Error')
+
     def get_all(self, tenant_id, offset=0, limit=100):
         try:
             result = self.es.search(index=tenant_id, doc_type=ImageData.Meta.doc_type, from_=offset, size=limit, version=True)
