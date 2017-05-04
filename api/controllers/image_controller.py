@@ -1,11 +1,16 @@
-import connexion
-from api.representations.image_request import ImageRequest
-from api.representations.image_response import ImageResponse
-from datetime import date, datetime
-from typing import List, Dict
-from six import iteritems
-from ..util import deserialize_date, deserialize_datetime
+import logging
 
+import connexion
+from elasticsearch import Elasticsearch
+
+from api.domain.image import ImageRepository, ImageData
+from api.representations.image_response import ImageResponse
+
+logger = logging.getLogger(__name__)
+
+INDEX_NAME = 'kingpick'
+ES = Elasticsearch('http://elasticsearch:9200')
+image_repository = ImageRepository(ES, INDEX_NAME)
 
 def add(tenant_id, project_id, image_request):
     """
@@ -20,6 +25,9 @@ def add(tenant_id, project_id, image_request):
 
     :rtype: ImageResponse
     """
+
     if connexion.request.is_json:
-        image_request = ImageRequest.from_dict(connexion.request.get_json())
-    return 'do some magic!'
+        image = ImageData(image_request, strict=False)
+        image = image_repository.save(tenant_id, project_id, image)
+
+    return ImageResponse.from_dict(image.flatten())
