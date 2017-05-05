@@ -1,9 +1,9 @@
 steps:
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/$PROJECT_ID/cvtool/cli-api:$TAG_NAME', '-t', 'gcr.io/$PROJECT_ID/cvtool/cli-api:latest', '.']
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/cvtool/cli-api:$REVISION_ID', '-t', 'gcr.io/$PROJECT_ID/cvtool/cli-api:latest', '.']
   dir: ''
   waitFor: ['-']
 
 images:
 - 'gcr.io/$PROJECT_ID/cvtool/cli-api:latest'
-- 'gcr.io/$PROJECT_ID/cvtool/cli-api:$TAG_NAME'
+- 'gcr.io/$PROJECT_ID/cvtool/cli-api:$REVISION_ID'
