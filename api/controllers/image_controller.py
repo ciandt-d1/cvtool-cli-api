@@ -35,7 +35,9 @@ def add(tenant_id, project_id, image_request):
             client = vision.Client()
             vision_image = client.image(source_uri=image.original_uri)
             labels = vision_image.detect_labels(limit=3)
-            logger.error(labels)
+
+            for label in labels:
+                logger.error(label.description + ' - ' + label.score)
 
             image = image_repository.save(tenant_id, project_id, image)
         else:
