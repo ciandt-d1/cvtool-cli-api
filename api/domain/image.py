@@ -39,8 +39,12 @@ class ImageRepository(object):
     def get_by_original_uri(self, tenant_id, original_uri):
         try:
             hit = self.es.search(index=tenant_id, doc_type=ImageData.Meta.doc_type, size=1,
-                                 body='{"field" : {"original_uri" : ' + original_uri + '}}')
-            image = ImageData(hit)
+                                 body={"query": {"term": {"original_uri": original_uri}}})
+            if hit['hits']['total'] == 0:
+                image = None
+            else:
+                image = ImageData(hit['hits']['hits'][0]['_source'])
+
             return image
         except TransportError as tp:
             logger.exception('Error')
