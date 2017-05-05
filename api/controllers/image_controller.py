@@ -37,7 +37,7 @@ def add(tenant_id, project_id, image_request):
             labels = vision_image.detect_labels(limit=3)
 
             for label in labels:
-                logger.error(label.description + ' - ' + label.score)
+                logger.error(label.description + ' - ' + str(label.score))
 
             image = image_repository.save(tenant_id, project_id, image)
         else:
