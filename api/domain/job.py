@@ -1,24 +1,26 @@
 import datetime
-import json
 import logging
 from enum import Enum
 
-from elasticsearch import Elasticsearch, TransportError
+from elasticsearch import TransportError
 from schematics.models import Model
 from schematics.transforms import blacklist
-from schematics.types import DateTimeType, StringType, URLType, LongType
+from schematics.types import DateTimeType, StringType, LongType
 from schematics.types.compound import DictType
 
 logger = logging.getLogger(__name__)
 
+
 class JobType(Enum):
-     csv = 1
-     flickr = 2
+    csv = 1
+    flickr = 2
+
 
 class JobStatus(Enum):
-     CREATED = 1
-     RUNNING = 2
-     FINISHED = 3
+    CREATED = 1
+    RUNNING = 2
+    FINISHED = 3
+
 
 class JobData(Model):
     class Meta:
@@ -32,7 +34,7 @@ class JobData(Model):
     tenant_id = StringType(required=True)
     project_id = StringType()
     job_type = StringType(required=True, choices=[type.name for type in JobType], default=JobType.csv.name)
-    status = StringType(required=True, choices=[status.name for status in JobStatus],  default=JobStatus.CREATED.name)
+    status = StringType(required=True, choices=[status.name for status in JobStatus], default=JobStatus.CREATED.name)
     exit_status = StringType()
     exit_message = StringType()
     create_time = DateTimeType(default=datetime.datetime.now)
@@ -43,41 +45,65 @@ class JobData(Model):
     input_params = DictType(StringType)
 
     def start(self):
+        if self.status != JobStatus.CREATED.name:
+            raise AttributeError('Cannot start job in status ' + self.status)
+
         self.status = JobStatus.RUNNING.name
-        self.start_time = datetime.datetime.now
+        self.start_time = datetime.datetime.now()
         self.last_updated = self.start_time
 
     def end(self):
+        if self.status != JobStatus.RUNNING.name:
+            raise AttributeError('Cannot end job in status ' + self.status)
+
         self.status = JobStatus.FINISHED.name
-        self.end_time = datetime.datetime.now
+        self.end_time = datetime.datetime.now()
         self.last_updated = self.end_time
+
+    def __str__(self):
+        return 'JobData(id={id})'.format(id=self.id)
+
+
+    @classmethod
+    def from_elasticsearch(cls, raw):
+        if '_source' in raw:
+            job_data = cls(raw.get('_source'), strict=False)
+            job_data.id = raw.get('_id')
+            job_data.version = raw.get('_version')
+            job_data.tenant_id = raw.get('_routing')
+        else:
+            job_data = cls(raw, strict=False)
+        return job_data
 
 
 class JobRepository(object):
-    
     def __init__(self, es, index_name='kingpick'):
         self.es = es
         self.index_name = index_name
 
-    def get_by_id(self, tenant_id, id):
+    def get_by_id(self, tenant_id, job_id):
         try:
-            hit = self.es.get(index=tenant_id, id=id, doc_type=JobData.Meta.doc_type)
-            job = JobData(hit)
+            hit = self.es.get(index=tenant_id, id=job_id, doc_type=JobData.Meta.doc_type)
+            job = JobData.from_elasticsearch(hit)
             return job
         except TransportError as tp:
             logger.exception('Error')
+            raise tp
 
     def get_all(self, tenant_id, offset=0, limit=100):
         try:
-            result = self.es.search(index=tenant_id, doc_type=JobData.Meta.doc_type, from_=offset, size=limit, version=True)
-            job = JobData(hit)
+            result = self.es.search(index=tenant_id, doc_type=JobData.Meta.doc_type, from_=offset, size=limit,
+                                    version=True)
+            job = JobData(result)
             return job
         except TransportError as tp:
             logger.exception('Error')
+            raise tp
 
-    def save(self, tenant_id, project_id, job):
+    def save(self, job):
         try:
-            result = self.es.index(index=tenant_id, doc_type=JobData.Meta.doc_type, body=job.to_primitive())
+            result = self.es.index(index=job.tenant_id, doc_type=JobData.Meta.doc_type, body=job.to_primitive(),
+                                   id=job.id, version=job.version)
             job.id = result.get('_id')
             job.version = result.get('_version')
             return job
@@ -86,8 +112,9 @@ class JobRepository(object):
             raise tp
 
     def add_step(self, tenant_id, step):
-        try:
-            self.create(index=tenant_id, doc_type=JobData.Meta.doc_type, id=step.id, body=step.flatten())
-            return job
-        except TransportError as tp:
-            logger.exception('Error')
+        raise NotImplementedError()
+        # try:
+        #     self.create(index=tenant_id, doc_type=JobData.Meta.doc_type, id=step.id, body=step.flatten())
+        #     return job
+        # except TransportError as tp:
+        #     logger.exception('Error')

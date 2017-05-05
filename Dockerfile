@@ -11,6 +11,4 @@ COPY . /usr/src/app
 
 EXPOSE 8080
 
-ENTRYPOINT ["python"]
-
-CMD ["run.py"]
+CMD python run.py

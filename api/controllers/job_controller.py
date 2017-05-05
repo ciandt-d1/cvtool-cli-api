@@ -1,16 +1,13 @@
 import logging
 
 import connexion
-from elasticsearch import Elasticsearch
 
+from api.infrastructure.elasticsearch import ES, INDEX_NAME
 from api.representations.job import Job
 from api.representations.job_step import JobStep
 from ..domain.job import JobData, JobRepository
 
 logger = logging.getLogger(__name__)
-
-INDEX_NAME = 'kingpick'
-ES = Elasticsearch('http://elasticsearch:9200')
 job_repository = JobRepository(ES, INDEX_NAME)
 
 
@@ -30,7 +27,9 @@ def create(tenant_id, project_id, new_job_request):
 
     if connexion.request.is_json:
         job = JobData(new_job_request, strict=False)
-        job = job_repository.save(tenant_id, project_id, job)
+        job.tenant_id = tenant_id
+        job.project_id = project_id
+        job = job_repository.save(job)
         return Job.from_dict(job.flatten())
 
 
@@ -48,7 +47,7 @@ def end_job(tenant_id, job_id):
 
     job = job_repository.get_by_id(tenant_id, job_id)
     job.end()
-    job = job_repository.save(tenant_id, None, job)
+    job = job_repository.save(job)
     return Job.from_dict(job.flatten())
 
 
@@ -81,7 +80,7 @@ def start_job(tenant_id, job_id):
 
     job = job_repository.get_by_id(tenant_id, job_id)
     job.start()
-    job = job_repository.save(tenant_id, None, job)
+    job = job_repository.save(job)
     return Job.from_dict(job.flatten())
 
 

@@ -52,7 +52,7 @@ docker run -p 8080:8080 kingpick
 
 ```
 # new tenant
-curl -X POST localhost:8081/v1/tenants -H "Content-Type:application/json" -d '{ 
+curl -X POST localhost:5000/v1/tenants -H "Content-Type:application/json" -d '{ 
     "id":"acme", 
     "name":"Acme Inc.", 
     "description":"The supper acme tenant", 
@@ -70,7 +70,7 @@ curl localhost:8081/v1/tenants/acme
 curl localhost:8081/v1/tenants
 
 # create project
-curl -X POST localhost:8081/v1/projects?tenant_id=acme -H "Content-Type:application/json" -d '{ 
+curl -X POST localhost:5000/v1/projects?tenant_id=acme -H "Content-Type:application/json" -d '{ 
     "id":"project-x", 
     "name":"Project X", 
     "description":"The supper project-x",         
@@ -100,7 +100,7 @@ curl -X POST "localhost:8082/v1/image-hashes/search?tenant_id=acme&project_id=pr
     "all_orientations": true
 }'
 
-curl -X POST "localhost:8081/v1/jobs?tenant_id=acme&project_id=project-x" -H "Content-Type:application/json" -d '{
+curl -X POST "localhost:5000/v1/jobs?tenant_id=acme&project_id=project-x" -H "Content-Type:application/json" -d '{
     "type": "csv",
     "auto_start": true
 }'

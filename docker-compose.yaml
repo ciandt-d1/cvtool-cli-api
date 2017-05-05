@@ -1,0 +1,29 @@
+version: '2'
+services:
+  web:
+    build: .
+    image: gcr.io/ciandt-cognitive-sandbox/cvtool/cli-api:local
+    container_name: cli-api
+    ports:
+    - "5000:8080"
+    volumes:
+    - .:/usr/src/app
+    environment:
+     - ELASTICSEARCH_URL=http://elastisearch:9200
+     - DEBUG=true
+    depends_on:
+     - "elasticsearch"
+
+  elasticsearch:
+      image: docker.elastic.co/elasticsearch/elasticsearch:5.2.2
+      container_name: elasticsearch
+      environment:
+        - xpack.security.enabled=false
+        - xpack.monitoring.enabled=false
+        - http.host=0.0.0.0
+        - transport.host=127.0.0.1
+        - cluster.name=docker-cluster
+        - bootstrap.memory_lock=true
+        - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      ports:
+        - "9200:9200"

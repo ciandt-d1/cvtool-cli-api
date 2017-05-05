@@ -1,16 +1,14 @@
 import logging
 
 import connexion
-from elasticsearch import Elasticsearch
 
 from api.domain.image import ImageRepository, ImageData
 from api.representations.image_response import ImageResponse
+from api.infrastructure.elasticsearch import ES, INDEX_NAME
 
 logger = logging.getLogger(__name__)
-
-INDEX_NAME = 'kingpick'
-ES = Elasticsearch('http://elasticsearch:9200')
 image_repository = ImageRepository(ES, INDEX_NAME)
+
 
 def add(tenant_id, project_id, image_request):
     """

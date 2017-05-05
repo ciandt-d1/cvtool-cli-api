@@ -1,16 +1,10 @@
 import connexion
+from elasticsearch import TransportError
+
+from api.infrastructure.elasticsearch import ES, INDEX_NAME, TENANT_DOC_TYPE
 from api.representations.tenant import Tenant
 from api.representations.tenants import Tenants
-from datetime import date, datetime
-from typing import List, Dict
-from six import iteritems
-from ..util import deserialize_date, deserialize_datetime
-from elasticsearch import Elasticsearch, TransportError
 
-
-ES = Elasticsearch('http://elasticsearch:9200')
-INDEX_NAME = 'api'
-TENANT_DOC_TYPE = 'tenant'
 
 def get_tenant(tenant_id):
     """
@@ -37,7 +31,7 @@ def get_tenants():
     :rtype: Tenants
     """
     hits = ES.search(index=INDEX_NAME, doc_type=TENANT_DOC_TYPE, version=True)
-    tenants = list(map(lambda hit: Tenant.from_dict(hit.get('_source')), hits.get('hits', { 'hits': [] }).get('hits')))
+    tenants = list(map(lambda hit: Tenant.from_dict(hit.get('_source')), hits.get('hits', {'hits': []}).get('hits')))
     return Tenants(items=tenants)
 
 
@@ -67,6 +61,7 @@ def post_tenant(tenant):
         }
         ES.indices.put_alias(index=INDEX_NAME, name=alias_name, body=alias_cfg)
         return tenant, 201
+
 
 def put_tenant(tenant_id, tenant):
     """
