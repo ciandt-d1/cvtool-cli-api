@@ -41,7 +41,7 @@ paths:
     post:
       tags:
       - "image"
-      description: "Adds an image signature to the database."
+      description: "Adds an image to the database."
       operationId: "add"
       produces:
       - "application/json"
@@ -51,6 +51,11 @@ paths:
         description: "tenant id"
         required: true
         type: "string"
+        maxLength: 64
+        minLength: 3
+        pattern: "[a-z0-9-_\\.]{3,64}"
+        x-regex: "[a-z0-9-_\\\\.]{3,64}"
+        x-modifiers: []
       - name: "project_id"
         in: "query"
         description: "project id"
@@ -67,6 +72,10 @@ paths:
           description: "The newly created image"
           schema:
             $ref: "#/definitions/ImageResponse"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Error"
       x-swagger-router-controller: "api.controllers.image_controller"
   /tenants:
     get:
@@ -162,6 +171,11 @@ paths:
         description: "tenant id"
         required: true
         type: "string"
+        maxLength: 64
+        minLength: 3
+        pattern: "[a-z0-9-_\\.]{3,64}"
+        x-regex: "[a-z0-9-_\\\\.]{3,64}"
+        x-modifiers: []
       responses:
         200:
           description: "Project list"
@@ -182,6 +196,11 @@ paths:
         description: "tenant id"
         required: true
         type: "string"
+        maxLength: 64
+        minLength: 3
+        pattern: "[a-z0-9-_\\.]{3,64}"
+        x-regex: "[a-z0-9-_\\\\.]{3,64}"
+        x-modifiers: []
       - in: "body"
         name: "project"
         description: "Project to create"
@@ -208,6 +227,11 @@ paths:
         description: "tenant id"
         required: true
         type: "string"
+        maxLength: 64
+        minLength: 3
+        pattern: "[a-z0-9-_\\.]{3,64}"
+        x-regex: "[a-z0-9-_\\\\.]{3,64}"
+        x-modifiers: []
       - name: "project_id"
         in: "path"
         description: "project id"
@@ -232,6 +256,11 @@ paths:
         description: "tenant id"
         required: true
         type: "string"
+        maxLength: 64
+        minLength: 3
+        pattern: "[a-z0-9-_\\.]{3,64}"
+        x-regex: "[a-z0-9-_\\\\.]{3,64}"
+        x-modifiers: []
       - name: "project_id"
         in: "path"
         description: "project id"
@@ -263,6 +292,11 @@ paths:
         description: "tenant id"
         required: true
         type: "string"
+        maxLength: 64
+        minLength: 3
+        pattern: "[a-z0-9-_\\.]{3,64}"
+        x-regex: "[a-z0-9-_\\\\.]{3,64}"
+        x-modifiers: []
       - name: "project_id"
         in: "query"
         description: "project id"
@@ -294,6 +328,11 @@ paths:
         description: "tenant id"
         required: true
         type: "string"
+        maxLength: 64
+        minLength: 3
+        pattern: "[a-z0-9-_\\.]{3,64}"
+        x-regex: "[a-z0-9-_\\\\.]{3,64}"
+        x-modifiers: []
       - name: "job_id"
         in: "path"
         description: "job id"
@@ -319,6 +358,11 @@ paths:
         description: "tenant id"
         required: true
         type: "string"
+        maxLength: 64
+        minLength: 3
+        pattern: "[a-z0-9-_\\.]{3,64}"
+        x-regex: "[a-z0-9-_\\\\.]{3,64}"
+        x-modifiers: []
       - name: "job_id"
         in: "path"
         description: "job id"
@@ -348,6 +392,11 @@ paths:
         description: "tenant id"
         required: true
         type: "string"
+        maxLength: 64
+        minLength: 3
+        pattern: "[a-z0-9-_\\.]{3,64}"
+        x-regex: "[a-z0-9-_\\\\.]{3,64}"
+        x-modifiers: []
       - name: "job_id"
         in: "path"
         description: "job id"
@@ -371,6 +420,11 @@ paths:
         description: "tenant id"
         required: true
         type: "string"
+        maxLength: 64
+        minLength: 3
+        pattern: "[a-z0-9-_\\.]{3,64}"
+        x-regex: "[a-z0-9-_\\\\.]{3,64}"
+        x-modifiers: []
       - name: "job_id"
         in: "path"
         description: "job id"
@@ -399,8 +453,10 @@ definitions:
         type: "string"
         description: "The image to add to the database."
       annotations:
-        $ref: "#/definitions/Annotation"
-  Annotation:
+        $ref: "#/definitions/Annotations"
+      exif_annotations:
+        $ref: "#/definitions/Annotations"
+  Annotations:
     type: "object"
     additionalProperties:
       type: "string"
@@ -410,6 +466,9 @@ definitions:
       id:
         type: "string"
         description: "Image id."
+      version:
+        type: "string"
+        description: "Image version id."
       job_id:
         type: "string"
         description: "Job id."
@@ -417,7 +476,19 @@ definitions:
         type: "string"
         description: "The image to add to the database."
       annotations:
-        $ref: "#/definitions/Annotation"
+        $ref: "#/definitions/Annotations"
+      exif_annotations:
+        $ref: "#/definitions/Annotations"
+  Error:
+    type: "object"
+    properties:
+      code:
+        type: "integer"
+        format: "int32"
+      message:
+        type: "string"
+      fields:
+        type: "string"
   Tenants:
     properties:
       items:

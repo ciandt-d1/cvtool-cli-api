@@ -13,7 +13,7 @@ image_repository = ImageRepository(ES, INDEX_NAME)
 def add(tenant_id, project_id, image_request):
     """
     add
-    Adds an image signature to the database.
+    Adds an image to the database.
     :param tenant_id: tenant id
     :type tenant_id: str
     :param project_id: project id

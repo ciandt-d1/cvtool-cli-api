@@ -1,6 +1,7 @@
 from elasticsearch import Elasticsearch
+from ..config import ELASTICSEARCH_URL
 
-ES = Elasticsearch('http://elasticsearch:9200')
+ES = Elasticsearch(ELASTICSEARCH_URL)
 INDEX_NAME = 'cvtool'
 TENANT_DOC_TYPE = 'tenant'
 INDEX_BODY = {
@@ -219,6 +220,11 @@ INDEX_BODY = {
                 "type": {
                     "type": "keyword",
                     "index": True
+                },
+
+                "exif_annotations": {
+                    "dynamic": True,
+                    "properties": {}
                 },
 
                 "annotations": {

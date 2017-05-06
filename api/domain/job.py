@@ -1,7 +1,7 @@
 import datetime
 import logging
 from enum import Enum
-
+import api.config as cfg
 from elasticsearch import TransportError
 from schematics.models import Model
 from schematics.transforms import blacklist
@@ -118,3 +118,24 @@ class JobRepository(object):
         #     return job
         # except TransportError as tp:
         #     logger.exception('Error')
+
+
+def trigger_csv_ingestion(job_data):
+    import requests
+
+    # {
+    #     "ingestion_request": {
+    #         "csv_uri": "/bucket/costarica-moths/input.csv",
+    #         "job_id": "AVvaFoMsrwRXigckTEVd",
+    #         "project_id": "project-x",
+    #         "tenant_id": "acme"
+    #     },
+    #     "pipeline_id": "AVvaFoMsrwRXigckTEVd",
+    #     "pipeline_results_uri": "/mapreduce/pipeline/status?root=AVvaFoMsrwRXigckTEVd"
+    # }
+
+    url = cfg.IMAGE_INGESTION_PIPELINE_URI
+    r = requests.post(url=url, json=job_data)
+    json = r.json()
+    logger.info('Ingestion pipeline triggered: %s', json)
+    return json

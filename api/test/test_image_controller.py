@@ -2,8 +2,9 @@
 
 from __future__ import absolute_import
 
-from swagger_server.models.image_request import ImageRequest
-from swagger_server.models.image_response import ImageResponse
+from api.representations.error import Error
+from api.representations.image_request import ImageRequest
+from api.representations.image_response import ImageResponse
 from . import BaseTestCase
 from six import BytesIO
 from flask import json
@@ -21,7 +22,7 @@ class TestImageController(BaseTestCase):
         image_request = ImageRequest()
         query_string = [('tenant_id', 'tenant_id_example'),
                         ('project_id', 'project_id_example')]
-        response = self.client.open('/v1images',
+        response = self.client.open('/v1/images',
                                     method='POST',
                                     data=json.dumps(image_request),
                                     content_type='application/json',

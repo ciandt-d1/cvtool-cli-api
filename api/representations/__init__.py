@@ -2,7 +2,8 @@
 
 from __future__ import absolute_import
 # import models into model package
-from .annotation import Annotation
+from .annotations import Annotations
+from .error import Error
 from .image_request import ImageRequest
 from .image_response import ImageResponse
 from .job import Job

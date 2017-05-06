@@ -2,10 +2,10 @@ import logging
 
 import connexion
 
-from api.infrastructure.elasticsearch import ES, INDEX_NAME
-from api.representations.job import Job
-from api.representations.job_step import JobStep
-from ..domain.job import JobData, JobRepository
+from ..domain.job import JobData, JobRepository, trigger_csv_ingestion
+from ..infrastructure.elasticsearch import ES, INDEX_NAME
+from ..representations.job import Job
+from ..representations.job_step import JobStep
 
 logger = logging.getLogger(__name__)
 job_repository = JobRepository(ES, INDEX_NAME)
@@ -30,7 +30,9 @@ def create(tenant_id, project_id, new_job_request):
         job.tenant_id = tenant_id
         job.project_id = project_id
         job = job_repository.save(job)
-        return Job.from_dict(job.flatten())
+        flattened_job = job.flatten()
+        trigger_csv_ingestion(flattened_job)
+        return Job.from_dict(flattened_job)
 
 
 def end_job(tenant_id, job_id):
