@@ -31,7 +31,7 @@ def create(tenant_id, project_id, new_job_request):
         job.project_id = project_id
         job = job_repository.save(job)
         flattened_job = job.flatten()
-        trigger_csv_ingestion(flattened_job)
+        trigger_csv_ingestion(job)
         return Job.from_dict(flattened_job)
 
 

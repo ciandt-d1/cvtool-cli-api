@@ -60,6 +60,10 @@ class JobData(Model):
         self.end_time = datetime.datetime.now()
         self.last_updated = self.end_time
 
+    @property
+    def csv_uri(self):
+        return self.input_params.get('csv_uri', None) if self.input_params else None
+
     def __str__(self):
         return 'JobData(id={id})'.format(id=self.id)
 
@@ -134,7 +138,14 @@ def trigger_csv_ingestion(job_data):
     # }
 
     url = cfg.IMAGE_INGESTION_PIPELINE_URI
-    r = requests.post(url=url, json=job_data)
+
+    ingestion_request = dict(
+        csv_uri=job_data.csv_uri,
+        job_id=job_data.id,
+        project_id=job_data.project_id,
+        tenant_id=job_data.tenant_id
+    )
+    r = requests.post(url=url, json=ingestion_request)
     json = r.json()
     logger.info('Ingestion pipeline triggered: %s', json)
     return json
