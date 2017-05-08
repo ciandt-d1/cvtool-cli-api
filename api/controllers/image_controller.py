@@ -47,7 +47,7 @@ def add(tenant_id, project_id, image_request):
                 vision_json = json.dumps(vision_result.__dict__)
                 image.vision_raw = vision_json
             except:
-                pass
+                logger.exception('Error using vision api')
 
             image = image_repository.save(tenant_id, project_id, image)
             return ImageResponse.from_dict(image.flatten())
