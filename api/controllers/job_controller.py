@@ -2,10 +2,9 @@ import logging
 
 import connexion
 
+from api.representations import NewJobRequest, Job, JobStep
 from ..domain.job import JobData, JobRepository, trigger_csv_ingestion
 from ..infrastructure.elasticsearch import ES, INDEX_NAME
-from ..representations.job import Job
-from ..representations.job_step import JobStep
 
 logger = logging.getLogger(__name__)
 job_repository = JobRepository(ES, INDEX_NAME)
@@ -26,12 +25,19 @@ def create(tenant_id, project_id, new_job_request):
     """
 
     if connexion.request.is_json:
+        job_representation = NewJobRequest.from_dict(new_job_request)
         job = JobData(new_job_request, strict=False)
         job.tenant_id = tenant_id
         job.project_id = project_id
         job = job_repository.save(job)
+
+        if job_representation.auto_start:
+            try:
+                trigger_csv_ingestion(job)
+            except:
+                logger.exception('Could not trigger pipeline ingestion.')
+
         flattened_job = job.flatten()
-        trigger_csv_ingestion(job)
         return Job.from_dict(flattened_job)
 
 
