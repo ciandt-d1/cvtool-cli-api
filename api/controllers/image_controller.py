@@ -1,7 +1,9 @@
+import json
 import logging
 
 import connexion
 from google.cloud import vision
+from google.cloud.vision.feature import Feature, FeatureTypes
 
 from api.domain.image import ImageRepository, ImageData
 from api.infrastructure.elasticsearch import ES, INDEX_NAME
@@ -31,13 +33,19 @@ def add(tenant_id, project_id, image_request):
         if image_repository.get_by_original_uri(tenant_id, image.original_uri) is None:
 
             try:
-                # TODO: Refactor vision API code (this is just a test)
+                # TODO: Check phash to avoid Vision API call for the same image
                 client = vision.Client()
                 vision_image = client.image(source_uri=image.original_uri)
-                labels = vision_image.detect_labels(limit=3)
 
-                for label in labels:
-                    logger.error(label.description + ' - ' + str(label.score))
+                # TODO: Get FEATURES from job parameter
+                features = [Feature(FeatureTypes.LABEL_DETECTION, 10),
+                            Feature(FeatureTypes.LANDMARK_DETECTION, 10),
+                            Feature(FeatureTypes.LOGO_DETECTION, 10),
+                            Feature(FeatureTypes.IMAGE_PROPERTIES, 10),
+                            Feature(FeatureTypes.SAFE_SEARCH_DETECTION, 10)]
+                vision_result = vision_image.detect(features)
+                vision_json = json.dumps(vision_result.__dict__)
+                image.vision_raw = vision_json
             except:
                 pass
 

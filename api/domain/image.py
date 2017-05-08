@@ -24,6 +24,7 @@ class ImageData(Model):
     original_uri = StringType()
     annotations = DictType(StringType)
     exif_annotations = DictType(StringType)
+    vision_raw = StringType()
 
     @classmethod
     def from_elasticsearch(cls, raw):
