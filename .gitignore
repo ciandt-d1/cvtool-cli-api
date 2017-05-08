@@ -89,7 +89,7 @@ ENV/
 .ropeproject
 
 .idea
-
 *.orig
-
 reset.sh
+input-x-small.csv
+input.csv

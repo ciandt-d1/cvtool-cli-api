@@ -27,7 +27,7 @@ class JobData(Model):
         doc_type = 'job'
 
     class Options:
-        roles = {'public': blacklist('id')}
+        roles = {'elasticsearch': blacklist('id', 'version')}
 
     id = StringType()
     version = LongType()
@@ -62,7 +62,6 @@ class JobData(Model):
 
     def __str__(self):
         return 'JobData(id={id})'.format(id=self.id)
-
 
     @classmethod
     def from_elasticsearch(cls, raw):
@@ -102,8 +101,8 @@ class JobRepository(object):
 
     def save(self, job):
         try:
-            result = self.es.index(index=job.tenant_id, doc_type=JobData.Meta.doc_type, body=job.to_primitive(),
-                                   id=job.id, version=job.version)
+            result = self.es.index(index=job.tenant_id, doc_type=JobData.Meta.doc_type,
+                                   body=job.to_primitive(role='elasticsearch'), id=job.id, version=job.version)
             job.id = result.get('_id')
             job.version = result.get('_version')
             return job
