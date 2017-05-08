@@ -64,6 +64,10 @@ class JobData(Model):
     def csv_uri(self):
         return self.input_params.get('csv_uri', None) if self.input_params else None
 
+    @property
+    def extract_exif_annoations(self):
+        return True
+
     def __str__(self):
         return 'JobData(id={id})'.format(id=self.id)
 

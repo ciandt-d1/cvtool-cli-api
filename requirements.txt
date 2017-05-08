@@ -4,3 +4,4 @@ setuptools >= 21.0.0
 elasticsearch>=5.0.0,<6.0.0
 schematics
 google-cloud-vision
+google-cloud-logging
