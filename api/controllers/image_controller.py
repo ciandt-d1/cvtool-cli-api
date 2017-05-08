@@ -33,7 +33,6 @@ def add(tenant_id, project_id, image_request):
             if hasattr(obj, '__dict__'):
                 return obj.__dict__
             return None
-            return json.JSONEncoder.default(self, obj)
 
     if connexion.request.is_json:
         image = ImageData(image_request, strict=False)
