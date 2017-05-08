@@ -56,16 +56,12 @@ class ImageRepository(object):
 
         query = {
             "query": {
-                "constant_score": {
-                    "filter": {
-                        "bool": {
-                            "must": [
-                                {"term": {"original_uri.raw": original_uri}},
-                                {"term": {"project_id.raw": project_id}},
-                                {"term": {"tenant_id.raw": tenant_id}}
-                            ]
-                        }
-                    }
+                "bool": {
+                    "must": [
+                        {"term": {"original_uri.raw": original_uri}},
+                        {"term": {"project_id": project_id}},
+                        {"term": {"tenant_id": tenant_id}}
+                    ]
                 }
             }
         }
