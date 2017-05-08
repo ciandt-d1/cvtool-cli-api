@@ -52,10 +52,27 @@ class ImageRepository(object):
         except TransportError as tp:
             logger.exception('Error')
 
-    def get_by_original_uri(self, tenant_id, original_uri):
+    def get_by_original_uri(self, tenant_id, project_id, original_uri):
+
+        query = {
+            "query": {
+                "constant_score": {
+                    "filter": {
+                        "bool": {
+                            "must": [
+                                {"term": {"original_uri.raw": original_uri}},
+                                {"term": {"project_id.raw": project_id}},
+                                {"term": {"tenant_id.raw": tenant_id}}
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+
         try:
-            hit = self.es.search(index=tenant_id, doc_type=ImageData.Meta.doc_type, size=1, version=True,
-                                 body={"query": {"term": {"original_uri.raw": original_uri}}})
+            hit = self.es.search(index=self.index_name, doc_type=ImageData.Meta.doc_type, size=1, version=True,
+                                 body=query)
             if hit['hits']['total'] == 0:
                 image = None
             else:

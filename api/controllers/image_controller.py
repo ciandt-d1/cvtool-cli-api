@@ -38,7 +38,7 @@ def add(tenant_id, project_id, image_request):
 
     if connexion.request.is_json:
         image = ImageData(image_request, strict=False)
-        if image_repository.get_by_original_uri(tenant_id, image.original_uri) is None:
+        if image_repository.get_by_original_uri(tenant_id, project_id, image.original_uri) is None:
 
             try:
 
