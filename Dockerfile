@@ -5,9 +5,9 @@ WORKDIR /usr/src/app
 
 COPY requirements.txt /usr/src/app/
 
-RUN apt-get install -y git
-
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN apt-get update && \
+    apt-get install -y git && \
+    pip3 install --no-cache-dir -r requirements.txt
 
 COPY . /usr/src/app
 
