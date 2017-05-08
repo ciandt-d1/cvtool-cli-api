@@ -5,4 +5,4 @@ elasticsearch>=5.0.0,<6.0.0
 schematics
 google-cloud-vision
 google-cloud-logging
-https://github.com/ciandt-d1/cvtool-images-python-client.git@master
+https://github.com/ciandt-d1/cvtool-images-python-client.git
