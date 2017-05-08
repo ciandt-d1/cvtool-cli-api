@@ -28,6 +28,13 @@ def add(tenant_id, project_id, image_request):
     :rtype: ImageResponse
     """
 
+    class VisionResponseEncoder(json.JSONEncoder):
+        def default(self, obj):
+            if hasattr(obj, '__dict__'):
+                return obj.__dict__
+            return None
+            return json.JSONEncoder.default(self, obj)
+
     if connexion.request.is_json:
         image = ImageData(image_request, strict=False)
         if image_repository.get_by_original_uri(tenant_id, image.original_uri) is None:
@@ -44,8 +51,10 @@ def add(tenant_id, project_id, image_request):
                             Feature(FeatureTypes.IMAGE_PROPERTIES, 10),
                             Feature(FeatureTypes.SAFE_SEARCH_DETECTION, 10)]
                 vision_result = vision_image.detect(features)
-                vision_json = json.dumps(vision_result.__dict__)
+                vision_json = json.dumps(vision_result, cls=VisionResponseEncoder)
+
                 image.vision_raw = vision_json
+
             except:
                 pass
 
