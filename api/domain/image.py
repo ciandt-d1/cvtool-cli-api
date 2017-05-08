@@ -90,7 +90,7 @@ class ImageRepository(object):
         try:
             image.tenant_id = tenant_id
             image.project_id = project_id
-            result = self.es.index(index=tenant_id, doc_type=ImageData.Meta.doc_type,
+            result = self.es.index(index=self.index_name, doc_type=ImageData.Meta.doc_type,
                                    body=image.to_primitive(role='elasticsearch'))
             image.id = result.get('_id')
             image.version = result.get('_version')
