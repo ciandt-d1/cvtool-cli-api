@@ -9,8 +9,8 @@ from api.domain.image import ImageRepository, ImageData
 from api.infrastructure.elasticsearch import ES, INDEX_NAME
 from api.representations import Error
 from api.representations.image_response import ImageResponse
-from image_hash.controllers import default_controller
-from image_hash.models import ImageHashSearchRequest, ImageHashRequest
+#from image_hash.controllers import default_controller
+#from image_hash.models import ImageHashSearchRequest, ImageHashRequest
 
 logger = logging.getLogger(__name__)
 image_repository = ImageRepository(ES, INDEX_NAME)
@@ -44,23 +44,24 @@ def add(tenant_id, project_id, image_request):
 
                 client = vision.Client()
 
-                image_match_response = default_controller.search(
-                    tenant_id, project_id, ImageHashSearchRequest(url=image.original_uri).__dict__)
-                if len(image_match_response.results) > 0:
-                    vision_json = client.image(source_uri=image_match_response[0].file_path)
-                else:
-                    vision_image = client.image(source_uri=image.original_uri)
+                #image_match_response = default_controller.search(
+                #    tenant_id, project_id, ImageHashSearchRequest(url=image.original_uri).__dict__)
+                #if len(image_match_response.results) > 0:
+                #    vision_json = client.image(source_uri=image_match_response[0].file_path)
+                #else:
 
-                    # TODO: Get FEATURES from job parameter
-                    features = [Feature(FeatureTypes.LABEL_DETECTION, 100),
-                                Feature(FeatureTypes.LANDMARK_DETECTION, 100),
-                                Feature(FeatureTypes.LOGO_DETECTION, 100),
-                                Feature(FeatureTypes.IMAGE_PROPERTIES, 100),
-                                Feature(FeatureTypes.SAFE_SEARCH_DETECTION, 100)]
-                    vision_result = vision_image.detect(features)
-                    vision_json = json.dumps(vision_result, cls=VisionResponseEncoder)
+                vision_image = client.image(source_uri=image.original_uri)
 
-                    default_controller.add(tenant_id, project_id, ImageHashRequest(url=image.original_uri).__dict__)
+                # TODO: Get FEATURES from job parameter
+                features = [Feature(FeatureTypes.LABEL_DETECTION, 100),
+                            Feature(FeatureTypes.LANDMARK_DETECTION, 100),
+                            Feature(FeatureTypes.LOGO_DETECTION, 100),
+                            Feature(FeatureTypes.IMAGE_PROPERTIES, 100),
+                            Feature(FeatureTypes.SAFE_SEARCH_DETECTION, 100)]
+                vision_result = vision_image.detect(features)
+                vision_json = json.dumps(vision_result, cls=VisionResponseEncoder)
+
+                #default_controller.add(tenant_id, project_id, ImageHashRequest(url=image.original_uri).__dict__)
 
                 # TODO: put vision_raw in a new type
                 image.vision_raw = vision_json
