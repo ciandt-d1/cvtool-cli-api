@@ -39,7 +39,7 @@ class ImageData(Model):
 
 
 class ImageRepository(object):
-    
+
     def __init__(self, es, index_name='cvtool'):
         self.es = es
         self.index_name = index_name
@@ -59,15 +59,14 @@ class ImageRepository(object):
                 "bool": {
                     "must": [
                         {"term": {"original_uri.raw": original_uri}},
-                        {"term": {"project_id": project_id}},
-                        {"term": {"tenant_id": tenant_id}}
+                        {"term": {"project_id": project_id}}
                     ]
                 }
             }
         }
 
         try:
-            hit = self.es.search(index=self.index_name, doc_type=ImageData.Meta.doc_type, size=1, version=True,
+            hit = self.es.search(index=tenant_id, doc_type=ImageData.Meta.doc_type, size=1, version=True,
                                  body=query)
             if hit['hits']['total'] == 0:
                 image = None
@@ -90,7 +89,7 @@ class ImageRepository(object):
         try:
             image.tenant_id = tenant_id
             image.project_id = project_id
-            result = self.es.index(index=self.index_name, doc_type=ImageData.Meta.doc_type,
+            result = self.es.index(index=image.tenant_id, doc_type=ImageData.Meta.doc_type,
                                    body=image.to_primitive(role='elasticsearch'))
             image.id = result.get('_id')
             image.version = result.get('_version')
