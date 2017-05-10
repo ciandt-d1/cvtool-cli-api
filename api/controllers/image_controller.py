@@ -2,15 +2,15 @@ import json
 import logging
 
 import connexion
+import swagger_client
 from google.cloud import vision
 from google.cloud.vision.feature import Feature, FeatureTypes
+from swagger_client.rest import ApiException
 
 from api.domain.image import ImageRepository, ImageData
 from api.infrastructure.elasticsearch import ES, INDEX_NAME
 from api.representations import Error
 from api.representations.image_response import ImageResponse
-#from image_hash.controllers import default_controller
-#from image_hash.models import ImageHashSearchRequest, ImageHashRequest
 
 logger = logging.getLogger(__name__)
 image_repository = ImageRepository(ES, INDEX_NAME)
@@ -31,6 +31,7 @@ def add(tenant_id, project_id, image_request):
     """
 
     class VisionResponseEncoder(json.JSONEncoder):
+        # TODO: better implementation, corresponding to vision api response
         def default(self, obj):
             if hasattr(obj, '__dict__'):
                 return obj.__dict__
@@ -40,16 +41,18 @@ def add(tenant_id, project_id, image_request):
         image = ImageData(image_request, strict=False)
         if image_repository.get_by_original_uri(tenant_id, project_id, image.original_uri) is None:
 
+            # Check if an image with similar phash was already added
+            image_hashes_api_instance = swagger_client.DefaultApi()
+            image_hash_search_request = swagger_client.ImageHashSearchRequest(url='http://loremflickr.com/320/240')  # TODO: get a valid http url for this api
             try:
+                api_response = image_hashes_api_instance.search(tenant_id, project_id, image_hash_search_request)
+                logger.debug(api_response)
+            except ApiException as e:
+                logger.exception("Exception when calling DefaultApi->search: %s\n" % e)
 
+            # Getting vision api information
+            try:
                 client = vision.Client()
-
-                #image_match_response = default_controller.search(
-                #    tenant_id, project_id, ImageHashSearchRequest(url=image.original_uri).__dict__)
-                #if len(image_match_response.results) > 0:
-                #    vision_json = client.image(source_uri=image_match_response[0].file_path)
-                #else:
-
                 vision_image = client.image(source_uri=image.original_uri)
 
                 # TODO: Get FEATURES from job parameter
@@ -61,15 +64,22 @@ def add(tenant_id, project_id, image_request):
                 vision_result = vision_image.detect(features)
                 vision_json = json.dumps(vision_result, cls=VisionResponseEncoder)
 
-                #default_controller.add(tenant_id, project_id, ImageHashRequest(url=image.original_uri).__dict__)
-
-                # TODO: put vision_raw in a new type
                 image.vision_raw = vision_json
 
             except:
                 logger.exception('Error using vision api')
 
+            # Adding image to repository
             image = image_repository.save(tenant_id, project_id, image)
+
+            # Adding image to hashes database
+            image_hash_request = swagger_client.ImageHashRequest(url='http://loremflickr.com/320/240')
+            try:
+                api_response = image_hashes_api_instance.add(tenant_id, project_id, image_hash_request)
+                logger.debug(api_response)
+            except ApiException as e:
+                logger.exception("Error when calling DefaultApi->add: %s\n" % e)
+
             return ImageResponse.from_dict(image.flatten())
         else:
             return Error(code=400, message='Duplicate images are not allowed'), 400
