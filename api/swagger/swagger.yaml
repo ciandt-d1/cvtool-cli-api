@@ -38,6 +38,54 @@ paths:
       - google_id_token: []
       x-swagger-router-controller: "api.controllers.auth_controller"
   /images:
+    get:
+      tags:
+      - "image"
+      description: "Adds an image to the database."
+      operationId: "list_all"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "tenant_id"
+        in: "query"
+        description: "tenant id"
+        required: true
+        type: "string"
+        maxLength: 64
+        minLength: 3
+        pattern: "[a-z0-9-_\\.]{3,64}"
+        x-regex: "[a-z0-9-_\\\\.]{3,64}"
+        x-modifiers: []
+      - name: "project_id"
+        in: "query"
+        description: "project id"
+        required: true
+        type: "string"
+      - name: "offset"
+        in: "query"
+        description: "offset"
+        required: false
+        type: "integer"
+        minimum: 0
+        format: "int32"
+      - name: "limit"
+        in: "query"
+        description: "limit"
+        required: false
+        type: "integer"
+        maximum: 100
+        minimum: 1
+        format: "int32"
+      responses:
+        200:
+          description: "list images image"
+          schema:
+            $ref: "#/definitions/ImageListResponse"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Error"
+      x-swagger-router-controller: "api.controllers.image_controller"
     post:
       tags:
       - "image"
@@ -443,23 +491,34 @@ securityDefinitions:
     x-google-jwks_uri: "https://www.googleapis.com/oauth2/v1/certs"
     x-google-audiences: "764086051850-6qr4p6gpi6hn506pt8ejuq83di341hur.apps.googleusercontent.com,1019062845561-ncr4dtvcshrrlg68nofsbmfnc7mf3g81.apps.googleusercontent.com"
 definitions:
-  ImageRequest:
+  ImageListResponse:
+    properties:
+      meta:
+        $ref: "#/definitions/MetaListResponse"
+      items:
+        type: "array"
+        uniqueItems: true
+        items:
+          $ref: "#/definitions/ImageResponse"
+  MetaListResponse:
     type: "object"
     properties:
-      job_id:
-        type: "string"
-        description: "Job id."
-      original_uri:
-        type: "string"
-        description: "The image to add to the database."
-      annotations:
-        $ref: "#/definitions/Annotations"
-      exif_annotations:
-        $ref: "#/definitions/Annotations"
-  Annotations:
-    type: "object"
-    additionalProperties:
-      type: "string"
+      offset:
+        type: "integer"
+        format: "int32"
+        description: "offset"
+        minimum: 0
+      limit:
+        type: "integer"
+        format: "int32"
+        description: "limit"
+        minimum: 1
+        maximum: 100
+      total:
+        type: "integer"
+        format: "int32"
+        description: "total"
+        minimum: 0
   ImageResponse:
     type: "object"
     properties:
@@ -479,6 +538,17 @@ definitions:
         $ref: "#/definitions/Annotations"
       exif_annotations:
         $ref: "#/definitions/Annotations"
+      vision_annotations:
+        $ref: "#/definitions/VisionAnnotations"
+  Annotations:
+    type: "object"
+    additionalProperties:
+      type: "string"
+  VisionAnnotations:
+    type: "object"
+    additionalProperties:
+      type: "object"
+      properties: {}
   Error:
     type: "object"
     properties:
@@ -489,6 +559,19 @@ definitions:
         type: "string"
       fields:
         type: "string"
+  ImageRequest:
+    type: "object"
+    properties:
+      job_id:
+        type: "string"
+        description: "Job id."
+      original_uri:
+        type: "string"
+        description: "The image to add to the database."
+      annotations:
+        $ref: "#/definitions/Annotations"
+      exif_annotations:
+        $ref: "#/definitions/Annotations"
   Tenants:
     properties:
       items:
