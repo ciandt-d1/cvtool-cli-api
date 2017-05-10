@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 
 import connexion
 import cvtool_image_hashes_client
@@ -42,6 +43,8 @@ def add(tenant_id, project_id, image_request):
         if image_repository.get_by_original_uri(tenant_id, project_id, image.original_uri) is None:
 
             # Check if an image with similar phash was already added
+            cvtool_image_hashes_client.configuration.host = os.environ['IMAGE_HASHES_API_HOST']
+            cvtool_image_hashes_client.configuration.debug = os.environ.get('DEBUG', None) is not None
             image_hashes_api_instance = cvtool_image_hashes_client.DefaultApi()
             image_hash_search_request = cvtool_image_hashes_client.ImageHashSearchRequest(url='http://www.offair.org/testPattern.png')  # TODO: get a valid http url for this api
             try:
