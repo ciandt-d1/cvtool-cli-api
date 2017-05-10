@@ -2,10 +2,10 @@ import json
 import logging
 
 import connexion
-import swagger_client
+import cvtool_image_hashes_client
+from cvtool_image_hashes_client.rest import ApiException
 from google.cloud import vision
 from google.cloud.vision.feature import Feature, FeatureTypes
-from swagger_client.rest import ApiException
 
 from api.domain.image import ImageRepository, ImageData
 from api.infrastructure.elasticsearch import ES, INDEX_NAME
@@ -42,8 +42,8 @@ def add(tenant_id, project_id, image_request):
         if image_repository.get_by_original_uri(tenant_id, project_id, image.original_uri) is None:
 
             # Check if an image with similar phash was already added
-            image_hashes_api_instance = swagger_client.DefaultApi()
-            image_hash_search_request = swagger_client.ImageHashSearchRequest(url='http://loremflickr.com/320/240')  # TODO: get a valid http url for this api
+            image_hashes_api_instance = cvtool_image_hashes_client.DefaultApi()
+            image_hash_search_request = cvtool_image_hashes_client.ImageHashSearchRequest(url='http://www.offair.org/testPattern.png')  # TODO: get a valid http url for this api
             try:
                 api_response = image_hashes_api_instance.search(tenant_id, project_id, image_hash_search_request)
                 logger.debug(api_response)
@@ -73,7 +73,7 @@ def add(tenant_id, project_id, image_request):
             image = image_repository.save(tenant_id, project_id, image)
 
             # Adding image to hashes database
-            image_hash_request = swagger_client.ImageHashRequest(url='http://loremflickr.com/320/240')
+            image_hash_request = cvtool_image_hashes_client.ImageHashRequest(url='http://www.offair.org/testPattern.png')
             try:
                 api_response = image_hashes_api_instance.add(tenant_id, project_id, image_hash_request)
                 logger.debug(api_response)
