@@ -48,29 +48,30 @@ def add(tenant_id, project_id, image_request):
             image_hashes_api_instance = cvtool_image_hashes_client.DefaultApi()
             image_hash_search_request = cvtool_image_hashes_client.ImageHashSearchRequest(url='http://www.offair.org/testPattern.png')  # TODO: get a valid http url for this api
             try:
-                api_response = image_hashes_api_instance.search(tenant_id, project_id, image_hash_search_request)
-                logger.debug(api_response)
-            except ApiException as e:
-                logger.exception("Exception when calling DefaultApi->search: %s\n" % e)
+                image_hashes_api_response = image_hashes_api_instance.search(tenant_id, project_id, image_hash_search_request)
+                logger.debug(image_hashes_api_response)
+                if len(image_hashes_api_response.results) == 0:
 
-            # Getting vision api information
-            try:
-                client = vision.Client()
-                vision_image = client.image(source_uri=image.original_uri)
+                    # Call vision API
+                    client = vision.Client()
+                    vision_image = client.image(source_uri=image.original_uri)
+                    features = [Feature(FeatureTypes.LABEL_DETECTION, 100),
+                                Feature(FeatureTypes.LANDMARK_DETECTION, 100),
+                                Feature(FeatureTypes.LOGO_DETECTION, 100),
+                                Feature(FeatureTypes.IMAGE_PROPERTIES, 100),
+                                Feature(FeatureTypes.SAFE_SEARCH_DETECTION, 100)]
 
-                # TODO: Get FEATURES from job parameter
-                features = [Feature(FeatureTypes.LABEL_DETECTION, 100),
-                            Feature(FeatureTypes.LANDMARK_DETECTION, 100),
-                            Feature(FeatureTypes.LOGO_DETECTION, 100),
-                            Feature(FeatureTypes.IMAGE_PROPERTIES, 100),
-                            Feature(FeatureTypes.SAFE_SEARCH_DETECTION, 100)]
-                vision_result = vision_image.detect(features)
-                vision_json = json.dumps(vision_result, cls=VisionResponseEncoder)
+                    vision_result = vision_image.detect(features)
+                    vision_raw = json.dumps(vision_result, cls=VisionResponseEncoder)
 
-                image.vision_raw = vision_json
+                else:
+                    vision_raw = 'VisionAPI already called for this image (clone data here)'
 
-            except:
-                logger.exception('Error using vision api')
+                image.vision_raw = vision_raw
+
+            except Exception as e:
+                logger.exception('Exception: %s\n' % e)
+
 
             # Adding image to repository
             image = image_repository.save(tenant_id, project_id, image)
