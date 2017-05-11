@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 
 import connexion
 import cvtool_image_hashes_client
@@ -11,7 +10,6 @@ from google.cloud.vision.feature import Feature, FeatureTypes
 from api.domain.image import ImageRepository, ImageData
 from api.infrastructure.elasticsearch import ES, INDEX_NAME
 from api.representations import Error, ImageListResponse, ImageResponse, MetaListResponse
-
 
 logger = logging.getLogger(__name__)
 image_repository = ImageRepository(ES, INDEX_NAME)
@@ -42,17 +40,6 @@ def add(tenant_id, project_id, image_request):
         image = ImageData(image_request, strict=False)
         if image_repository.get_by_original_uri(tenant_id, project_id, image.original_uri) is None:
 
-            # Check if an image with similar phash was already added
-            cvtool_image_hashes_client.configuration.host = os.environ['IMAGE_HASHES_API_HOST']
-            cvtool_image_hashes_client.configuration.debug = os.environ.get('DEBUG', None) is not None
-            image_hashes_api_instance = cvtool_image_hashes_client.DefaultApi()
-            image_hash_search_request = cvtool_image_hashes_client.ImageHashSearchRequest(url='http://www.offair.org/testPattern.png')  # TODO: get a valid http url for this api
-            try:
-                api_response = image_hashes_api_instance.search(tenant_id, project_id, image_hash_search_request)
-                logger.debug(api_response)
-            except ApiException as e:
-                logger.exception("Exception when calling DefaultApi->search: %s\n" % e)
-
             # Getting vision api information
             try:
                 client = vision.Client()
@@ -68,7 +55,6 @@ def add(tenant_id, project_id, image_request):
                 vision_json = json.dumps(vision_result, cls=VisionResponseEncoder)
 
                 image.vision_raw = vision_json
-
             except:
                 logger.exception('Error using vision api')
 
