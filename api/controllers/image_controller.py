@@ -29,12 +29,83 @@ def add(tenant_id, project_id, image_request):
     :rtype: ImageResponse
     """
 
-    class VisionResponseEncoder(json.JSONEncoder):
-        # TODO: better implementation, corresponding to vision api response
+    class GenericResponseEncoder(json.JSONEncoder):
         def default(self, obj):
             if hasattr(obj, '__dict__'):
                 return obj.__dict__
             return None
+
+    def vision_model(vision_raw):
+        result = {}
+
+        # Safe search
+        safe_search_annotation = {'adult': vision_raw.safe_searches.adult.value,
+                                  'spoof': vision_raw.safe_searches.spoof.value,
+                                  'medical': vision_raw.safe_searches.medical.value,
+                                  'violence': vision_raw.safe_searches.violence.value}
+        result['safeSearchAnnotation'] = safe_search_annotation
+
+        # Label
+        label_annotations = []
+        for label in vision_raw.labels:
+            vertices = []
+            for vertice in label.bounds.vertices:
+                vertices.append({'x': vertice.x, 'y': vertice.y})
+            label_annotations.append({
+                'mid': label.mid,
+                'locale': label.locale,
+                'description': label.description,
+                'score': label.score,
+                'boundingPoly': vertices
+            })
+        result['labelAnnotations'] = label_annotations
+
+        # Landmark
+        landmark_annotations = []
+        for landmark in vision_raw.landmarks:
+            vertices = []
+            for vertice in landmark.bounds.vertices:
+                vertices.append({'x': vertice.x, 'y': vertice.y})
+            landmark_annotations.append({
+                'mid': landmark.mid,
+                'locale': landmark.locale,
+                'description': landmark.description,
+                'score': landmark.score,
+                'boundingPoly': vertices
+            })
+        result['landmarkAnnotations'] = landmark_annotations
+
+        # Logo
+        logo_annotations = []
+        for logo in vision_raw.logos:
+            vertices = []
+            for vertice in logo.bounds.vertices:
+                vertices.append({'x': vertice.x, 'y': vertice.y})
+            logo_annotations.append({
+                'mid': logo.mid,
+                'locale': logo.locale,
+                'description': logo.description,
+                'score': logo.score,
+                'boundingPoly': vertices
+            })
+        result['logoAnnotations'] = logo_annotations
+
+        # Image Properties
+        colors = []
+        for color in vision_raw.properties.colors:
+            colors.append({
+                'color': {'red': color.color.red, 'green': color.color.green, 'blue': color.color.blue,
+                          'alpha': color.color.alpha},
+                'pixelFraction': color.pixel_fraction,
+                'score': color.score
+            })
+        result['imagePropertiesAnnotation'] = {
+            'dominantColors': {
+                'colors': colors
+            }
+        }
+
+        return result
 
     if connexion.request.is_json:
         image = ImageData(image_request, strict=False)
@@ -52,22 +123,12 @@ def add(tenant_id, project_id, image_request):
                             Feature(FeatureTypes.IMAGE_PROPERTIES, 100),
                             Feature(FeatureTypes.SAFE_SEARCH_DETECTION, 100)]
                 vision_result = vision_image.detect(features)
-                vision_json = json.dumps(vision_result, cls=VisionResponseEncoder)
-
-                image.vision_raw = vision_json
+                image.vision_annotations = json.dumps(vision_model(vision_result[0]))
             except:
                 logger.exception('Error using vision api')
 
             # Adding image to repository
             image = image_repository.save(tenant_id, project_id, image)
-
-            # Adding image to hashes database
-            image_hash_request = cvtool_image_hashes_client.ImageHashRequest(url='http://www.offair.org/testPattern.png')
-            try:
-                api_response = image_hashes_api_instance.add(tenant_id, project_id, image_hash_request)
-                logger.debug(api_response)
-            except ApiException as e:
-                logger.exception("Error when calling DefaultApi->add: %s\n" % e)
 
             return ImageResponse.from_dict(image.flatten())
         else:
