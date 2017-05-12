@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 
 import connexion
 import cvtool_image_hashes_client
