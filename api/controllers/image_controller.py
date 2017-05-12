@@ -3,7 +3,6 @@ import logging
 
 import connexion
 import cvtool_image_hashes_client
-from cvtool_image_hashes_client.rest import ApiException
 from google.cloud import vision
 from google.cloud.vision.feature import Feature, FeatureTypes
 
@@ -28,12 +27,6 @@ def add(tenant_id, project_id, image_request):
 
     :rtype: ImageResponse
     """
-
-    class GenericResponseEncoder(json.JSONEncoder):
-        def default(self, obj):
-            if hasattr(obj, '__dict__'):
-                return obj.__dict__
-            return None
 
     def vision_model(vision_raw):
         result = {}
@@ -111,24 +104,45 @@ def add(tenant_id, project_id, image_request):
         image = ImageData(image_request, strict=False)
         if image_repository.get_by_original_uri(tenant_id, project_id, image.original_uri) is None:
 
-            # Getting vision api information
-            try:
-                client = vision.Client()
-                vision_image = client.image(source_uri=image.original_uri)
+            # Check if an image with similar phash was already added
+            cvtool_image_hashes_client.configuration.host = os.environ['IMAGE_HASHES_API_HOST']
+            cvtool_image_hashes_client.configuration.debug = os.environ.get('DEBUG', None) is not None
+            image_hashes_api_instance = cvtool_image_hashes_client.DefaultApi()
+            image_hash_search_request = cvtool_image_hashes_client.ImageHashSearchRequest(url=image.original_uri)
 
-                # TODO: Get FEATURES from job parameter
-                features = [Feature(FeatureTypes.LABEL_DETECTION, 100),
-                            Feature(FeatureTypes.LANDMARK_DETECTION, 100),
-                            Feature(FeatureTypes.LOGO_DETECTION, 100),
-                            Feature(FeatureTypes.IMAGE_PROPERTIES, 100),
-                            Feature(FeatureTypes.SAFE_SEARCH_DETECTION, 100)]
-                vision_result = vision_image.detect(features)
-                image.vision_annotations = json.dumps(vision_model(vision_result[0]))
-            except:
-                logger.exception('Error using vision api')
+            try:
+                image_hashes_api_response = image_hashes_api_instance.search(tenant_id, project_id,image_hash_search_request)
+                logger.debug(image_hashes_api_response)
+                if len(image_hashes_api_response.results) == 0:
+                    # Getting vision api information from Google
+                    client = vision.Client()
+                    vision_image = client.image(source_uri=image.original_uri)
+                    features = [Feature(FeatureTypes.LABEL_DETECTION, 100), # TODO: Get FEATURES from job parameter
+                                Feature(FeatureTypes.LANDMARK_DETECTION, 100),
+                                Feature(FeatureTypes.LOGO_DETECTION, 100),
+                                Feature(FeatureTypes.IMAGE_PROPERTIES, 100),
+                                Feature(FeatureTypes.SAFE_SEARCH_DETECTION, 100)]
+                    vision_result = vision_image.detect(features)
+                    image.vision_annotations = json.dumps(vision_model(vision_result[0]))
+
+                    # Adding image to hashes database
+                    image_hash_request = cvtool_image_hashes_client.ImageHashRequest(url=image.original_uri)
+                    insert_image_hashes_api_response = image_hashes_api_instance.add(tenant_id, project_id,
+                                                                                     image_hash_request)
+                    logger.debug(insert_image_hashes_api_response)
+                else:
+                    # Clonning vision api information from another image
+                    logger.info('Similar image was already ingested, cloning vision API data')
+                    image_already_ingested = image_repository.get_by_original_uri(tenant_id, project_id,
+                                                         image_hashes_api_response.results[0].filepath)
+                    image.vision_annotations = image_already_ingested.vision_annotations
+
+            except Exception:
+                logger.exception('Error')
 
             # Adding image to repository
             image = image_repository.save(tenant_id, project_id, image)
+            logger.info('New image ingested: ' + image)
 
             return ImageResponse.from_dict(image.flatten())
         else:
