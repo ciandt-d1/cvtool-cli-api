@@ -143,7 +143,7 @@ def add(tenant_id, project_id, image_request):
 
             # Adding image to repository
             image = image_repository.save(tenant_id, project_id, image)
-            logger.info('New image ingested: ' + image)
+            logger.info('New image ingested: ' + str(image.flatten()))
 
             return ImageResponse.from_dict(image.flatten())
         else:
