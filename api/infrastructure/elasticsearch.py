@@ -178,11 +178,6 @@ INDEX_BODY = {
                     "index": True
                 },
 
-                "project_id": {
-                    "type": "keyword",
-                    "index": True
-                },
-
                 "original_uri": {
                     "type": "text",
                     "index": True,

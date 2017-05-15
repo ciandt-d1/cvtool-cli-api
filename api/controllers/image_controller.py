@@ -110,13 +110,14 @@ def add(tenant_id, image_request):
             image_hash_search_request = cvtool_image_hashes_client.ImageHashSearchRequest(url=image.original_uri)
 
             try:
-                image_hashes_api_response = image_hashes_api_instance.search(tenant_id, 'default_project',image_hash_search_request)
+                image_hashes_api_response = image_hashes_api_instance.search(tenant_id, 'default_project',
+                                                                             image_hash_search_request)
                 logger.debug(image_hashes_api_response)
                 if len(image_hashes_api_response.results) == 0:
                     # Getting vision api information from Google
                     client = vision.Client()
                     vision_image = client.image(source_uri=image.original_uri)
-                    features = [Feature(FeatureTypes.LABEL_DETECTION, 100), # TODO: Get FEATURES from job parameter
+                    features = [Feature(FeatureTypes.LABEL_DETECTION, 100),  # TODO: Get FEATURES from job parameter
                                 Feature(FeatureTypes.LANDMARK_DETECTION, 100),
                                 Feature(FeatureTypes.LOGO_DETECTION, 100),
                                 Feature(FeatureTypes.IMAGE_PROPERTIES, 100),
@@ -132,8 +133,8 @@ def add(tenant_id, image_request):
                 else:
                     # Clonning vision api information from another image
                     logger.info('Similar image was already ingested, cloning vision API data')
-                    image_already_ingested = image_repository.get_by_original_uri(tenant_id,
-                                                 image_hashes_api_response.results[0].filepath)
+                    image_already_ingested = image_repository.get_by_original_uri(
+                        tenant_id, image_hashes_api_response.results[0].filepath)
                     image.vision_annotations = image_already_ingested.vision_annotations
 
             except Exception:
