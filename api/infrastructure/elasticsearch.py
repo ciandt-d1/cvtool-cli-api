@@ -180,7 +180,7 @@ INDEX_BODY = {
 
                 "original_uri": {
                     "type": "text",
-                    "index": True,
+                    "index": "not_analyzed",
                     "fields": {
                         "raw": {
                             "type": "keyword"
