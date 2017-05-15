@@ -19,7 +19,6 @@ class ImageData(Model):
     id = StringType()
     version = LongType()
     tenant_id = StringType()
-    project_id = StringType()
     job_id = StringType()
     original_uri = StringType()
     annotations = DictType(StringType)
