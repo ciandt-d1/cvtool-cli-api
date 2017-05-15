@@ -19,6 +19,7 @@ class ImageData(Model):
     id = StringType()
     version = LongType()
     tenant_id = StringType()
+    project_id = StringType()
     job_id = StringType()
     original_uri = StringType()
     annotations = DictType(StringType)
@@ -55,11 +56,7 @@ class ImageRepository(object):
 
         query = {
             "query": {
-                "bool": {
-                    "must": [
-                        {"term": {"original_uri.raw": original_uri}}
-                    ]
-                }
+                {"term": {"original_uri.raw": original_uri}}
             }
         }
 
@@ -94,6 +91,7 @@ class ImageRepository(object):
     def save(self, tenant_id, image):
         try:
             image.tenant_id = tenant_id
+            image.project_id = project_id
             result = self.es.index(index=image.tenant_id, doc_type=ImageData.Meta.doc_type,
                                    body=image.to_primitive(role='elasticsearch'))
             image.id = result.get('_id')
