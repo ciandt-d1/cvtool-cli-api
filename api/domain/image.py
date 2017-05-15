@@ -91,7 +91,6 @@ class ImageRepository(object):
     def save(self, tenant_id, image):
         try:
             image.tenant_id = tenant_id
-            image.project_id = project_id
             result = self.es.index(index=image.tenant_id, doc_type=ImageData.Meta.doc_type,
                                    body=image.to_primitive(role='elasticsearch'))
             image.id = result.get('_id')
