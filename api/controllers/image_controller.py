@@ -101,7 +101,7 @@ def add(tenant_id, image_request):
 
     if connexion.request.is_json:
         image = ImageData(image_request, strict=False)
-        if image_repository.get_by_original_uri(tenant_id, project_id, image.original_uri) is None:
+        if image_repository.get_by_original_uri(tenant_id, image.original_uri) is None:
 
             # Check if an image with similar phash was already added
             cvtool_image_hashes_client.configuration.host = os.environ['IMAGE_HASHES_API_HOST']
