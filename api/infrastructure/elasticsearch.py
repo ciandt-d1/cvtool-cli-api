@@ -179,13 +179,8 @@ INDEX_BODY = {
                 },
 
                 "original_uri": {
-                    "type": "text",
-                    "index": True,
-                    "fields": {
-                        "raw": {
-                            "type": "keyword"
-                        }
-                    }
+                    "type": "string",
+                    "index": "not_analyzed"
                 },
 
                 "uri": {
