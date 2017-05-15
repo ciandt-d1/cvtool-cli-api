@@ -19,7 +19,6 @@ class ImageData(Model):
     id = StringType()
     version = LongType()
     tenant_id = StringType()
-    project_id = StringType()
     job_id = StringType()
     original_uri = StringType()
     annotations = DictType(StringType)
@@ -52,14 +51,13 @@ class ImageRepository(object):
         except TransportError as tp:
             logger.exception('Error')
 
-    def get_by_original_uri(self, tenant_id, project_id, original_uri):
+    def get_by_original_uri(self, tenant_id, original_uri):
 
         query = {
             "query": {
                 "bool": {
                     "must": [
-                        {"term": {"original_uri.raw": original_uri}},
-                        {"term": {"project_id": project_id}}
+                        {"term": {"original_uri.raw": original_uri}}
                     ]
                 }
             }
@@ -93,10 +91,9 @@ class ImageRepository(object):
             logger.exception('Error')
             raise tp
 
-    def save(self, tenant_id, project_id, image):
+    def save(self, tenant_id, image):
         try:
             image.tenant_id = tenant_id
-            image.project_id = project_id
             result = self.es.index(index=image.tenant_id, doc_type=ImageData.Meta.doc_type,
                                    body=image.to_primitive(role='elasticsearch'))
             image.id = result.get('_id')

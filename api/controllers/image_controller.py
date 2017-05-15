@@ -15,14 +15,12 @@ logger = logging.getLogger(__name__)
 image_repository = ImageRepository(ES, INDEX_NAME)
 
 
-def add(tenant_id, project_id, image_request):
+def add(tenant_id, image_request):
     """
     add
     Adds an image to the database.
     :param tenant_id: tenant id
     :type tenant_id: str
-    :param project_id: project id
-    :type project_id: str
     :param image_request: Image to create
     :type image_request: dict | bytes
 
@@ -112,7 +110,7 @@ def add(tenant_id, project_id, image_request):
             image_hash_search_request = cvtool_image_hashes_client.ImageHashSearchRequest(url=image.original_uri)
 
             try:
-                image_hashes_api_response = image_hashes_api_instance.search(tenant_id, project_id,image_hash_search_request)
+                image_hashes_api_response = image_hashes_api_instance.search(tenant_id, 'default_project',image_hash_search_request)
                 logger.debug(image_hashes_api_response)
                 if len(image_hashes_api_response.results) == 0:
                     # Getting vision api information from Google
@@ -128,21 +126,21 @@ def add(tenant_id, project_id, image_request):
 
                     # Adding image to hashes database
                     image_hash_request = cvtool_image_hashes_client.ImageHashRequest(url=image.original_uri)
-                    insert_image_hashes_api_response = image_hashes_api_instance.add(tenant_id, project_id,
+                    insert_image_hashes_api_response = image_hashes_api_instance.add(tenant_id, 'default_project',
                                                                                      image_hash_request)
                     logger.debug(insert_image_hashes_api_response)
                 else:
                     # Clonning vision api information from another image
                     logger.info('Similar image was already ingested, cloning vision API data')
-                    image_already_ingested = image_repository.get_by_original_uri(tenant_id, project_id,
-                                                         image_hashes_api_response.results[0].filepath)
+                    image_already_ingested = image_repository.get_by_original_uri(tenant_id,
+                                                 image_hashes_api_response.results[0].filepath)
                     image.vision_annotations = image_already_ingested.vision_annotations
 
             except Exception:
                 logger.exception('Error')
 
             # Adding image to repository
-            image = image_repository.save(tenant_id, project_id, image)
+            image = image_repository.save(tenant_id, image)
             logger.info('New image ingested: ' + str(image.flatten()))
 
             return ImageResponse.from_dict(image.flatten())
