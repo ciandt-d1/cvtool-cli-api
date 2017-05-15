@@ -55,7 +55,7 @@ class ImageRepository(object):
 
         query = {
             'query': {
-                {'term': {'original_uri.raw': original_uri}}
+                {'term': {u'original_uri.raw': original_uri}}
             }
         }
 
