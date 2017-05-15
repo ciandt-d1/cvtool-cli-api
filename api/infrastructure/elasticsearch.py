@@ -4,6 +4,7 @@ from ..config import ELASTICSEARCH_URL
 ES = Elasticsearch(ELASTICSEARCH_URL)
 INDEX_NAME = 'cvtool'
 TENANT_DOC_TYPE = 'tenant'
+PROJECT_DOC_TYPE = 'project'
 INDEX_BODY = {
     "settings": {
         "number_of_shards": 10
@@ -26,7 +27,7 @@ INDEX_BODY = {
             }
         },
 
-        "project": {
+        PROJECT_DOC_TYPE: {
             "properties": {
 
                 "tenant_id": {

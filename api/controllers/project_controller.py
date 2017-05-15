@@ -1,6 +1,6 @@
 import connexion
 
-from api.infrastructure.elasticsearch import ES
+from api.infrastructure.elasticsearch import ES, PROJECT_DOC_TYPE
 from api.representations.project import Project
 from api.representations.projects import Projects
 
@@ -66,4 +66,6 @@ def list_projects(tenant_id):
 
     :rtype: Projects
     """
-    return 'do some magic!'
+    hits = ES.search(index=tenant_id, doc_type=PROJECT_DOC_TYPE, version=True)
+    projects = list(map(lambda hit: Project.from_dict(hit.get('_source')), hits.get('hits', {'hits': []}).get('hits')))
+    return Projects(items=projects)
