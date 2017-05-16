@@ -54,8 +54,12 @@ class ImageRepository(object):
     def get_by_original_uri(self, tenant_id, original_uri):
 
         query = {
-            'query': {
-                'term': {'original_uri.raw': original_uri}
+            "query": {
+                "bool": {
+                    "must": [
+                        {"term": {"original_uri.raw": original_uri}}
+                    ]
+                }
             }
         }
 
