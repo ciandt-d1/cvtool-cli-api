@@ -24,6 +24,7 @@ class ImageData(Model):
     annotations = DictType(StringType)
     exif_annotations = DictType(StringType)
     vision_annotations = StringType()
+    similar = StringType()
 
     @classmethod
     def from_elasticsearch(cls, raw):

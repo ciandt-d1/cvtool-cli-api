@@ -198,6 +198,16 @@ INDEX_BODY = {
                     }
                 },
 
+                "similar": {
+                    "type": "text",
+                    "index": True,
+                    "fields": {
+                        "raw": {
+                            "type": "keyword"
+                        }
+                    }
+                },
+
                 "width": {
                     "type": "integer",
                     "index": True

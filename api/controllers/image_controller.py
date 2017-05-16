@@ -136,6 +136,7 @@ def add(tenant_id, image_request):
                     image_already_ingested = image_repository.get_by_original_uri(
                         tenant_id, image_hashes_api_response.results[0].filepath)
                     image.vision_annotations = image_already_ingested.vision_annotations
+                    image.similar = image_already_ingested.original_uri
 
             except Exception:
                 logger.exception('Error')
