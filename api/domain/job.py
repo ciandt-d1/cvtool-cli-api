@@ -95,6 +95,7 @@ class JobRepository(object):
             hit = self.es.get(index=tenant_id, id=job_id, doc_type=JobData.Meta.doc_type)
             job = JobData.from_elasticsearch(hit)
             count = self.es.count(index=tenant_id, doc_type=ImageData.Meta.doc_type).get('count')
+            logger.info(count)
             job.image_count = count
             return job
         except TransportError as tp:
