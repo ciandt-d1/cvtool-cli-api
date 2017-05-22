@@ -45,6 +45,7 @@ class JobData(Model):
     last_updated = DateTimeType(default=datetime.datetime.now)
     created_by = StringType()
     input_params = DictType(StringType)
+    image_count = LongType()
 
     def start(self):
         if self.status != JobStatus.CREATED.name:
@@ -94,8 +95,7 @@ class JobRepository(object):
         try:
             hit = self.es.get(index=tenant_id, id=job_id, doc_type=JobData.Meta.doc_type)
             job = JobData.from_elasticsearch(hit)
-            count = self.es.count(index=tenant_id, doc_type=ImageData.Meta.doc_type).get('count')
-            job.image_count = count
+            job.image_count = self.es.count(index=tenant_id, doc_type=ImageData.Meta.doc_type).get('count')
             return job
         except TransportError as tp:
             logger.exception('Error')
