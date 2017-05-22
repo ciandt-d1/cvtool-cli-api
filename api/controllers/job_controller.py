@@ -71,7 +71,9 @@ def get(tenant_id, job_id):
     :rtype: Job
     """
     job = job_repository.get_by_id(tenant_id, job_id)
-    return Job.from_dict(job.flatten())
+    job_model = Job.from_dict(job.flatten())
+    job_model.image_count = job.image_count
+    return job_model
 
 
 def start_job(tenant_id, job_id):
