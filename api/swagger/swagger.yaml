@@ -676,6 +676,9 @@ definitions:
       created_by:
         type: "string"
         description: "Job creator"
+      image_count:
+        type: "string"
+        description: "Tenant image count"
       input_params:
         $ref: "#/definitions/JobInputParameters"
   JobStep:
