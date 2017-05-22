@@ -54,7 +54,8 @@ class Job(Model):
             'end_time': datetime,
             'last_updated': datetime,
             'created_by': str,
-            'input_params': JobInputParameters
+            'input_params': JobInputParameters,
+            'image_count': str
         }
 
         self.attribute_map = {
@@ -69,7 +70,8 @@ class Job(Model):
             'end_time': 'end_time',
             'last_updated': 'last_updated',
             'created_by': 'created_by',
-            'input_params': 'input_params'
+            'input_params': 'input_params',
+            'image_count': 'image_count'
         }
 
         self._id = id
