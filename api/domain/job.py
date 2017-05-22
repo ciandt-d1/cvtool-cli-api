@@ -8,6 +8,8 @@ from schematics.transforms import blacklist
 from schematics.types import DateTimeType, StringType, LongType
 from schematics.types.compound import DictType
 
+from api.domain.image import ImageData
+
 logger = logging.getLogger(__name__)
 
 
@@ -92,6 +94,8 @@ class JobRepository(object):
         try:
             hit = self.es.get(index=tenant_id, id=job_id, doc_type=JobData.Meta.doc_type)
             job = JobData.from_elasticsearch(hit)
+            count = self.es.count(index=tenant_id, doc_type=ImageData.Meta.doc_type).get('count')
+            job.image_count = count
             return job
         except TransportError as tp:
             logger.exception('Error')
