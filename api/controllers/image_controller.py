@@ -110,8 +110,9 @@ def add(tenant_id, image_request):
             image_hash_search_request = cvtool_image_hashes_client.ImageHashSearchRequest(url=image.original_uri)
 
             try:
-                image_hashes_api_response = image_hashes_api_instance.search(tenant_id, 'default_project',
-                                                                             image_hash_search_request)
+                # image_hashes_api_response = image_hashes_api_instance.search(tenant_id, 'default_project',
+                #                                                             image_hash_search_request)
+                image_hashes_api_response = []  # FIXME: just a performance test, remove this
                 logger.debug(image_hashes_api_response)
                 if len(image_hashes_api_response.results) == 0:
                     # Getting vision api information from Google
@@ -127,9 +128,9 @@ def add(tenant_id, image_request):
 
                     # Adding image to hashes database
                     image_hash_request = cvtool_image_hashes_client.ImageHashRequest(url=image.original_uri)
-                    insert_image_hashes_api_response = image_hashes_api_instance.add(tenant_id, 'default_project',
-                                                                                     image_hash_request)
-                    logger.debug(insert_image_hashes_api_response)
+                    # insert_image_hashes_api_response = image_hashes_api_instance.add(tenant_id, 'default_project',
+                    #                                                                  image_hash_request)
+                    # logger.debug(insert_image_hashes_api_response)
                 else:
                     # Clonning vision api information from another image
                     logger.info('Similar image was already ingested, cloning vision API data')
