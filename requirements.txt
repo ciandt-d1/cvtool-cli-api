@@ -2,7 +2,7 @@ connexion == 1.0.129
 python_dateutil == 2.6.0
 setuptools >= 21.0.0
 elasticsearch>=5.0.0,<6.0.0
-schematics
+schematics == 1.1.2
 google-cloud-vision
 google-cloud-logging
 git+https://github.com/ciandt-d1/cvtool-image-hashes-client.git
