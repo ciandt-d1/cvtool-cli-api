@@ -127,7 +127,7 @@ def add(tenant_id, image_request):
                     image.vision_annotations = json.dumps(vision_model(vision_result[0]))
 
                     # Adding image to hashes database
-                    image_hash_request = cvtool_image_hashes_client.ImageHashRequest(url=image.original_uri)
+                    # image_hash_request = cvtool_image_hashes_client.ImageHashRequest(url=image.original_uri)
                     # insert_image_hashes_api_response = image_hashes_api_instance.add(tenant_id, 'default_project',
                     #                                                                  image_hash_request)
                     # logger.debug(insert_image_hashes_api_response)
