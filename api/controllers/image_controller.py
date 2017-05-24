@@ -42,7 +42,7 @@ def add(tenant_id, image_request):
         for label in vision_raw.labels:
             vertices = []
             for vertice in label.bounds.vertices:
-                vertices.append({'x': vertice.x, 'y': vertice.y})
+                vertices.append({'x': vertice.x_coordinate, 'y': vertice.y_coordinate})
             label_annotations.append({
                 'mid': label.mid,
                 'locale': label.locale,
@@ -57,7 +57,7 @@ def add(tenant_id, image_request):
         for landmark in vision_raw.landmarks:
             vertices = []
             for vertice in landmark.bounds.vertices:
-                vertices.append({'x': vertice.x, 'y': vertice.y})
+                vertices.append({'x': vertice.x_coordinate, 'y': vertice.y_coordinate})
             landmark_annotations.append({
                 'mid': landmark.mid,
                 'locale': landmark.locale,
@@ -72,7 +72,7 @@ def add(tenant_id, image_request):
         for logo in vision_raw.logos:
             vertices = []
             for vertice in logo.bounds.vertices:
-                vertices.append({'x': vertice.x, 'y': vertice.y})
+                vertices.append({'x': vertice.x_coordinate, 'y': vertice.y_coordinate})
             logo_annotations.append({
                 'mid': logo.mid,
                 'locale': logo.locale,
