@@ -629,8 +629,9 @@ definitions:
       type: "string"
   ExportRequest:
     type: "object"
-    bucket_name:
-      type: "string"
+    properties:
+      bucket_name:
+        type: "string"
   Projects:
     properties:
       items:
