@@ -15,7 +15,6 @@ from google.cloud.vision.feature import Feature, FeatureTypes
 from api.domain.image import ImageRepository, ImageData
 from api.infrastructure.elasticsearch import ES, INDEX_NAME
 from api.representations import Error, ImageListResponse, ImageResponse, MetaListResponse
-from images import count, get
 
 logger = logging.getLogger(__name__)
 image_repository = ImageRepository(ES, INDEX_NAME)
@@ -256,14 +255,14 @@ def export(tenant_id, bucket_name):
     bucket = storage_client.get_bucket(bucket_name)
     blob_name = 'image-export/{tenant_id}/{export_id}.json'.format(tenant_id=tenant_id, export_id=file_name)
     blob = storage.Blob(blob_name, bucket)
-    total = count(tenant_id, project_id)
+    total = list_all(tenant_id, offset=0, limit=1).meta.total
 
     logger.info('%s image(s) to export', total)
 
     with tempfile.NamedTemporaryFile() as tmp_file:
         while offset < total:
             logger.debug('About to fetch image batch: offset: %s, limit: %s', offset, limit)
-            api_response = get(tenant_id, project_id, offset=offset, limit=limit)
+            api_response = list_all(tenant_id, offset=offset, limit=limit)
             items = api_response.items
             logger.debug('Got batch with %s image(s)', len(items))
             for image in items:
