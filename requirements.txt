@@ -6,3 +6,6 @@ schematics == 1.1.2
 google-cloud-vision
 google-cloud-logging
 git+https://github.com/ciandt-d1/cvtool-image-hashes-client.git
+google-cloud-storage
+google-cloud-bigquery
+git+https://github.com/ciandt-d1/cvtool-images-python-client.git

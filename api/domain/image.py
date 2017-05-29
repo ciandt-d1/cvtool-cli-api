@@ -76,7 +76,7 @@ class ImageRepository(object):
         except TransportError as tp:
             logger.exception('Error')
 
-    def get_all(self, tenant_id, project_id=None, offset=0, limit=100):
+    def get_all(self, tenant_id, offset=0, limit=100):
         try:
             result = self.es.search(index=tenant_id, doc_type=ImageData.Meta.doc_type, from_=offset, size=limit, version=True)
             total = result['hits']['total']

@@ -120,6 +120,39 @@ paths:
           schema:
             $ref: "#/definitions/Error"
       x-swagger-router-controller: "api.controllers.image_controller"
+  /images/{tenant_id}/export:
+    post:
+      tags:
+      - "export"
+      description: "Export all images to BQ."
+      operationId: "export"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "tenant_id"
+        in: "path"
+        description: "tenant id"
+        required: true
+        type: "string"
+        maxLength: 64
+        minLength: 3
+        pattern: "[a-z0-9-_\\.]{3,64}"
+        x-regex: "[a-z0-9-_\\\\.]{3,64}"
+        x-modifiers: []
+      - in: "body"
+        name: "export_request"
+        description: "Bucket to export"
+        required: true
+        schema:
+          $ref: "#/definitions/ExportRequest"
+      responses:
+        200:
+          description: "The newly created image"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Error"
+      x-swagger-router-controller: "api.controllers.image_controller"
   /tenants:
     get:
       tags:
@@ -593,6 +626,10 @@ definitions:
   Settings:
     type: "object"
     additionalProperties:
+      type: "string"
+  ExportRequest:
+    type: "object"
+    bucket_name:
       type: "string"
   Projects:
     properties:
