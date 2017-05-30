@@ -246,8 +246,8 @@ def export(tenant_id, export_request):
 
     offset = 0
     limit = 100
-    project_id = 'default_project'
     file_name = str(uuid.uuid4())
+    bucket_name = export_request.bucket_name
 
     logger.info('Starting export for tenant: %s', tenant_id)
 
