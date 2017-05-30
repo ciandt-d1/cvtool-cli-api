@@ -141,7 +141,7 @@ paths:
         x-modifiers: []
       - in: "body"
         name: "export_request"
-        description: "Bucket to export"
+        description: "export request"
         required: true
         schema:
           $ref: "#/definitions/ExportRequest"
@@ -632,6 +632,7 @@ definitions:
     properties:
       bucket_name:
         type: "string"
+        description: "Bucket name"
   Projects:
     properties:
       items:

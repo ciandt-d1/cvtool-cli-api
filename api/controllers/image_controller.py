@@ -178,7 +178,7 @@ def list_all(tenant_id, offset=None, limit=None):
     )
 
 
-def export(tenant_id, bucket_name):
+def export(tenant_id, export_request):
     SCHEMA = [
         SchemaField('project_id', 'STRING', mode='NULLABLE'),
         SchemaField('id', 'STRING', mode='REQUIRED'),
