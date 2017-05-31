@@ -296,9 +296,9 @@ def export(tenant_id):
         dataset.create()
 
     bq_table = dataset.table('images', SCHEMA)
-    # TODO add flag to force table recreation
-    # if bq_table.exists():
-    #     bq_table.delete()
+
+    if bq_table.exists():
+        bq_table.delete()
     if not bq_table.exists():
         bq_table.create()
 
@@ -321,3 +321,4 @@ def export(tenant_id):
     logger.info('%s', job)
     logger.info('%s, %s, %s, %s', job.name, job.job_type, job.created, job.state)
 
+    return 'Ok', 200

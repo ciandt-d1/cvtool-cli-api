@@ -139,12 +139,6 @@ paths:
         pattern: "[a-z0-9-_\\.]{3,64}"
         x-regex: "[a-z0-9-_\\\\.]{3,64}"
         x-modifiers: []
-      - in: "body"
-        name: "export_request"
-        description: "export request"
-        required: true
-        schema:
-          $ref: "#/definitions/ExportRequest"
       responses:
         200:
           description: "The newly created image"
@@ -627,12 +621,6 @@ definitions:
     type: "object"
     additionalProperties:
       type: "string"
-  ExportRequest:
-    type: "object"
-    properties:
-      bucket_name:
-        type: "string"
-        description: "Bucket name"
   Projects:
     properties:
       items:
