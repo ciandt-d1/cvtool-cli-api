@@ -1,13 +1,38 @@
 import logging
+import tempfile
+import uuid
 
 import connexion
+from google.cloud._helpers import _to_bytes
 
 from api.representations import NewJobRequest, Job, JobStep
 from ..domain.job import JobData, JobRepository, trigger_csv_ingestion
 from ..infrastructure.elasticsearch import ES, INDEX_NAME
+from google.cloud import storage
 
 logger = logging.getLogger(__name__)
 job_repository = JobRepository(ES, INDEX_NAME)
+
+
+def generate_input_csv(bucket_path):
+    bucket_name = bucket_path.split('/', 3)[2]
+    prefix = bucket_path.split('/', 3)[3]
+
+    storage_client = storage.Client()
+    bucket = storage_client.get_bucket(bucket_name)
+
+    file_name = str(uuid.uuid4())
+    output_blob = storage.Blob('csv/{export_id}.csv'.format(export_id=file_name), bucket)
+
+    blobs = bucket.list_blobs(prefix=prefix, delimiter='/')
+
+    with tempfile.NamedTemporaryFile() as tmp_file:
+        tmp_file.write(_to_bytes('file\n', encoding='utf-8'))
+        for item in blobs:
+            tmp_file.write(_to_bytes('gs://' + bucket_name + '/' + item.name + '\n', encoding='utf-8'))
+        output_blob.upload_from_file(tmp_file, client=storage_client, rewind=True)
+
+    return 200, 'gs://{bucket_name}/csv/{export_id}.csv'.format(bucket_name=bucket_name, export_id=file_name)
 
 
 def create(tenant_id, project_id, new_job_request):

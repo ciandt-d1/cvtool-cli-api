@@ -384,6 +384,25 @@ paths:
           schema:
             $ref: "#/definitions/Job"
       x-swagger-router-controller: "api.controllers.job_controller"
+  /jobs/csv:
+    get:
+      tags:
+      - "csv"
+      description: "Generate csv file from a bucket path."
+      operationId: "generate_input_csv"
+      produces:
+      - "application/json"
+      parameters:
+      - name: "bucket_path"
+        in: "query"
+        description: "bucket path"
+        required: true
+        type: "string"
+        x-modifiers: []
+      responses:
+        200:
+          description: "The newly created CSV path"
+      x-swagger-router-controller: "api.controllers.job_controller"
   /jobs/{job_id}:
     get:
       tags:
