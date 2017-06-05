@@ -10,16 +10,9 @@ schemes:
 - "https"
 produces:
 - "application/json"
+security:
+- cvtool_token: []
 paths:
-  /setup:
-    post:
-      description: "Setup basic infrastructure"
-      operationId: "setup"
-      parameters: []
-      responses:
-        200:
-          description: "Setup basic infrastructure"
-      x-swagger-router-controller: "api.controllers.default_controller"
   /auth/token:
     get:
       tags:
@@ -31,7 +24,7 @@ paths:
       parameters: []
       responses:
         200:
-          description: "Kingpick access token"
+          description: "Cvtool access token"
           schema:
             type: "string"
       security:
@@ -56,11 +49,6 @@ paths:
         pattern: "[a-z0-9-_\\.]{3,64}"
         x-regex: "[a-z0-9-_\\\\.]{3,64}"
         x-modifiers: []
-      - name: "project_id"
-        in: "query"
-        description: "project id"
-        required: true
-        type: "string"
       - name: "offset"
         in: "query"
         description: "offset"
@@ -123,11 +111,9 @@ paths:
   /images/{tenant_id}/export:
     post:
       tags:
-      - "export"
+      - "image"
       description: "Export all images to BQ."
       operationId: "export"
-      produces:
-      - "application/json"
       parameters:
       - name: "tenant_id"
         in: "path"
@@ -367,11 +353,6 @@ paths:
         pattern: "[a-z0-9-_\\.]{3,64}"
         x-regex: "[a-z0-9-_\\\\.]{3,64}"
         x-modifiers: []
-      - name: "project_id"
-        in: "query"
-        description: "project id"
-        required: true
-        type: "string"
       - in: "body"
         name: "new_job_request"
         description: "new job request"
@@ -383,25 +364,6 @@ paths:
           description: "The newly created Job"
           schema:
             $ref: "#/definitions/Job"
-      x-swagger-router-controller: "api.controllers.job_controller"
-  /jobs/csv:
-    get:
-      tags:
-      - "csv"
-      description: "Generate csv file from a bucket path."
-      operationId: "generate_input_csv"
-      produces:
-      - "application/json"
-      parameters:
-      - name: "bucket_path"
-        in: "query"
-        description: "bucket path"
-        required: true
-        type: "string"
-        x-modifiers: []
-      responses:
-        200:
-          description: "The newly created CSV path"
       x-swagger-router-controller: "api.controllers.job_controller"
   /jobs/{job_id}:
     get:
@@ -524,13 +486,13 @@ paths:
           description: "The newly created image"
       x-swagger-router-controller: "api.controllers.job_controller"
 securityDefinitions:
-  google_id_token:
+  cvtool_token:
     type: "oauth2"
     authorizationUrl: ""
     flow: "implicit"
-    x-google-issuer: "accounts.google.com"
-    x-google-jwks_uri: "https://www.googleapis.com/oauth2/v1/certs"
-    x-google-audiences: "764086051850-6qr4p6gpi6hn506pt8ejuq83di341hur.apps.googleusercontent.com,1019062845561-ncr4dtvcshrrlg68nofsbmfnc7mf3g81.apps.googleusercontent.com"
+    x-google-issuer: "cvtool"
+    x-google-jwks_uri: "https://storage.googleapis.com/ciandt-cognitive-sandbox.appspot.com/oauth2/v1/certs.json"
+    x-google-audiences: "cli"
 definitions:
   ImageListResponse:
     properties:
@@ -718,8 +680,9 @@ definitions:
         type: "string"
         description: "Job creator"
       image_count:
-        type: "string"
-        description: "Tenant image count"
+        type: "integer"
+        format: "int32"
+        description: "Job image count"
       input_params:
         $ref: "#/definitions/JobInputParameters"
   JobStep:
