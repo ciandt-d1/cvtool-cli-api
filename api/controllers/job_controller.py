@@ -32,17 +32,16 @@ def generate_input_csv(bucket_path):
             tmp_file.write(_to_bytes('gs://' + bucket_name + '/' + item.name + '\n', encoding='utf-8'))
         output_blob.upload_from_file(tmp_file, client=storage_client, rewind=True)
 
-    return 200, 'gs://{bucket_name}/csv/{export_id}.csv'.format(bucket_name=bucket_name, export_id=file_name)
+    return 'gs://{bucket_name}/csv/{export_id}.csv'.format(bucket_name=bucket_name, export_id=file_name), 200
 
 
-def create(tenant_id, project_id, new_job_request):
+def create(tenant_id, new_job_request):
     """
     create
     Adds an new job.
     :param tenant_id: tenant id
     :type tenant_id: str
     :param project_id: project id
-    :type project_id: str
     :param new_job_request: new job request
     :type new_job_request: dict | bytes
 
@@ -53,7 +52,6 @@ def create(tenant_id, project_id, new_job_request):
         job_representation = NewJobRequest.from_dict(new_job_request)
         job = JobData(new_job_request, strict=False)
         job.tenant_id = tenant_id
-        job.project_id = project_id
         job = job_repository.save(job)
 
         if job_representation.auto_start:
