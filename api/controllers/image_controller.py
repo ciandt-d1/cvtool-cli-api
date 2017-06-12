@@ -1,20 +1,18 @@
 import json
 import logging
-import os
 import tempfile
 import uuid
 
 import connexion
-import cvtool_image_hashes_client
-import time
-from google.cloud import vision, storage, bigquery
 from google.cloud._helpers import _to_bytes
 from google.cloud.bigquery import SchemaField
-from google.cloud.vision.feature import Feature, FeatureTypes
 
+from api.domain import image_hash
 from api.domain.image import ImageRepository, ImageData
+from api.infrastructure import vision
 from api.infrastructure.elasticsearch import ES, INDEX_NAME
 from api.representations import Error, ImageListResponse, ImageResponse, MetaListResponse
+from .job_controller import job_repository
 
 logger = logging.getLogger(__name__)
 image_repository = ImageRepository(ES, INDEX_NAME)
@@ -32,119 +30,23 @@ def add(tenant_id, image_request):
     :rtype: ImageResponse
     """
 
-    def vision_model(vision_raw):
-        result = {}
-
-        # Safe search
-        safe_search_annotation = {'adult': vision_raw.safe_searches.adult.value,
-                                  'spoof': vision_raw.safe_searches.spoof.value,
-                                  'medical': vision_raw.safe_searches.medical.value,
-                                  'violence': vision_raw.safe_searches.violence.value}
-        result['safeSearchAnnotation'] = safe_search_annotation
-
-        # Label
-        label_annotations = []
-        for label in vision_raw.labels:
-            vertices = []
-            for vertice in label.bounds.vertices:
-                vertices.append({'x': vertice.x_coordinate, 'y': vertice.y_coordinate})
-            label_annotations.append({
-                'mid': label.mid,
-                'locale': label.locale,
-                'description': label.description,
-                'score': label.score,
-                'boundingPoly': vertices
-            })
-        result['labelAnnotations'] = label_annotations
-
-        # Landmark
-        landmark_annotations = []
-        for landmark in vision_raw.landmarks:
-            vertices = []
-            for vertice in landmark.bounds.vertices:
-                vertices.append({'x': vertice.x_coordinate, 'y': vertice.y_coordinate})
-            landmark_annotations.append({
-                'mid': landmark.mid,
-                'locale': landmark.locale,
-                'description': landmark.description,
-                'score': landmark.score,
-                'boundingPoly': vertices
-            })
-        result['landmarkAnnotations'] = landmark_annotations
-
-        # Logo
-        logo_annotations = []
-        for logo in vision_raw.logos:
-            vertices = []
-            for vertice in logo.bounds.vertices:
-                vertices.append({'x': vertice.x_coordinate, 'y': vertice.y_coordinate})
-            logo_annotations.append({
-                'mid': logo.mid,
-                'locale': logo.locale,
-                'description': logo.description,
-                'score': logo.score,
-                'boundingPoly': vertices
-            })
-        result['logoAnnotations'] = logo_annotations
-
-        # Image Properties
-        colors = []
-        for color in vision_raw.properties.colors:
-            colors.append({
-                'color': {'red': color.color.red, 'green': color.color.green, 'blue': color.color.blue,
-                          'alpha': color.color.alpha},
-                'pixelFraction': color.pixel_fraction,
-                'score': color.score
-            })
-        result['imagePropertiesAnnotation'] = {
-            'dominantColors': {
-                'colors': colors
-            }
-        }
-
-        return result
-
     if connexion.request.is_json:
         image = ImageData(image_request, strict=False)
+
         if image_repository.get_by_original_uri(tenant_id, image.original_uri) is None:
 
-            # Check if an image with similar phash was already added
-            cvtool_image_hashes_client.configuration.host = os.environ['IMAGE_HASHES_API_HOST']
-            cvtool_image_hashes_client.configuration.debug = os.environ.get('DEBUG', None) is not None
-            image_hashes_api_instance = cvtool_image_hashes_client.DefaultApi()
-            image_hash_search_request = cvtool_image_hashes_client.ImageHashSearchRequest(url=image.original_uri)
+            similar_image_uri = image_hash.exists_similar_image(tenant_id, image)
 
-            try:
-                image_hashes_api_response = image_hashes_api_instance.search(tenant_id, 'default_project',
-                                                                             image_hash_search_request)
-                logger.debug(image_hashes_api_response)
-                if len(image_hashes_api_response.results) == 0:
-                    # Getting vision api information from Google
-                    client = vision.Client()
-                    vision_image = client.image(source_uri=image.original_uri)
-                    features = [Feature(FeatureTypes.LABEL_DETECTION, 100),  # TODO: Get FEATURES from job parameter
-                                Feature(FeatureTypes.LANDMARK_DETECTION, 100),
-                                Feature(FeatureTypes.LOGO_DETECTION, 100),
-                                Feature(FeatureTypes.IMAGE_PROPERTIES, 100),
-                                Feature(FeatureTypes.SAFE_SEARCH_DETECTION, 100)]
-                    vision_result = vision_image.detect(features)
-                    image.vision_annotations = json.dumps(vision_model(vision_result[0]))
-
-                    # Adding image to hashes database
-                    image_hash_request = cvtool_image_hashes_client.ImageHashRequest(url=image.original_uri)
-                    insert_image_hashes_api_response = image_hashes_api_instance.add(tenant_id, 'default_project',
-                                                                                     image_hash_request)
-                    logger.debug(insert_image_hashes_api_response)
-                else:
-                    # Clonning vision api information from another image
-                    logger.info('Similar image was already ingested, cloning vision API data')
-                    image_already_ingested = image_repository.get_by_original_uri(
-                        tenant_id, image_hashes_api_response.results[0].filepath)
-                    image.vision_annotations = image_already_ingested.vision_annotations
-                    image.similar = image_already_ingested.original_uri
-
-            except Exception:
-                logger.exception('Error')
+            if not similar_image_uri:
+                job = job_repository.get_by_id(tenant_id, image.job_id)
+                vision_result = vision.detect(image, job.vision_api_features)
+                image.vision_annotations = json.dumps(vision_result.raw_response)
+                image_hash.add(tenant_id, image)
+            else:
+                logger.info('Similar image was already ingested, cloning vision API data')
+                image_already_ingested = image_repository.get_by_original_uri(tenant_id, similar_image_uri)
+                image.vision_annotations = image_already_ingested.vision_annotations
+                image.similar = image_already_ingested.original_uri
 
             # Adding image to repository
             image = image_repository.save(tenant_id, image)
@@ -191,12 +93,14 @@ def export(tenant_id):
         ]),
 
         SchemaField('vision_annotations', 'RECORD', mode='NULLABLE', fields=[
+
             SchemaField('safeSearchAnnotation', 'RECORD', mode='NULLABLE', fields=[
                 SchemaField('adult', 'STRING', mode='NULLABLE'),
                 SchemaField('spoof', 'STRING', mode='NULLABLE'),
                 SchemaField('medical', 'STRING', mode='NULLABLE'),
                 SchemaField('violence', 'STRING', mode='NULLABLE')
             ]),
+
             SchemaField('labelAnnotations', 'RECORD', mode='REPEATED', fields=[
                 SchemaField('mid', 'STRING', mode='NULLABLE'),
                 SchemaField('locale', 'STRING', mode='NULLABLE'),
@@ -207,6 +111,7 @@ def export(tenant_id):
                     SchemaField('y', 'INTEGER', mode='NULLABLE')
                 ])
             ]),
+
             SchemaField('landmarkAnnotations', 'RECORD', mode='REPEATED', fields=[
                 SchemaField('mid', 'STRING', mode='NULLABLE'),
                 SchemaField('locale', 'STRING', mode='NULLABLE'),
@@ -217,6 +122,7 @@ def export(tenant_id):
                     SchemaField('y', 'INTEGER', mode='NULLABLE')
                 ])
             ]),
+
             SchemaField('logoAnnotations', 'RECORD', mode='REPEATED', fields=[
                 SchemaField('mid', 'STRING', mode='NULLABLE'),
                 SchemaField('locale', 'STRING', mode='NULLABLE'),
@@ -227,6 +133,7 @@ def export(tenant_id):
                     SchemaField('y', 'INTEGER', mode='NULLABLE')
                 ])
             ]),
+
             SchemaField('imagePropertiesAnnotation', 'RECORD', mode='NULLABLE', fields=[
                 SchemaField('dominantColors', 'RECORD', mode='NULLABLE', fields=[
                     SchemaField('colors', 'RECORD', mode='REPEATED', fields=[
@@ -240,7 +147,28 @@ def export(tenant_id):
                         ]),
                     ])
                 ])
+            ]),
+
+            SchemaField('cropHintsAnnotation', 'RECORD', mode='REPEATED', fields=[
+                SchemaField('importanceFraction', 'FLOAT', mode='NULLABLE'),
+                SchemaField('confidence', 'FLOAT', mode='NULLABLE'),
+                SchemaField('cropHints', 'RECORD', mode='REPEATED', fields=[
+                    SchemaField('boundingPoly', 'RECORD', mode='REPEATED', fields=[
+                        SchemaField('x', 'INTEGER', mode='NULLABLE'),
+                        SchemaField('y', 'INTEGER', mode='NULLABLE')
+                    ])
+                ])
+            ]),
+
+            SchemaField('textAnnotations', 'RECORD', mode='REPEATED', fields=[
+                SchemaField('description', 'STRING', mode='NULLABLE'),
+                SchemaField('locale', 'STRING', mode='NULLABLE'),
+                SchemaField('boundingPoly', 'RECORD', mode='REPEATED', fields=[
+                    SchemaField('x', 'INTEGER', mode='NULLABLE'),
+                    SchemaField('y', 'INTEGER', mode='NULLABLE')
+                ])
             ])
+
         ])
     ]
 
@@ -311,12 +239,12 @@ def export(tenant_id):
     logger.info('Starting job')
     job.begin()
 
-    retry_count = 100
-    while retry_count > 0 and job.state != 'DONE':
-        retry_count -= 1
-        time.sleep(10)
-        logger.info('Reloading %s', job)
-        job.reload()  # API call
+    # retry_count = 100
+    # while retry_count > 0 and job.state != 'DONE':
+    #     retry_count -= 1
+    #     time.sleep(10)
+    #     logger.info('Reloading %s', job)
+    #     job.reload()  # API call
 
     logger.info('%s', job)
     logger.info('%s, %s, %s, %s', job.name, job.job_type, job.created, job.state)
