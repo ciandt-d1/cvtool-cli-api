@@ -28,6 +28,8 @@ def exists_similar_image(tenant_id, image):
 
 def add(tenant_id, image):
     # Adding image to hashes database
-    image_hash_request = client.ImageHashRequest(url=image.original_uri)
+    image_hash_request = client.ImageHashRequest(url=image.original_uri, filepath=image.original_uri, metadata=dict(
+        image_job_id=image.job_id
+    ))
     insert_image_hashes_api_response = image_hashes_api_instance.add(tenant_id, 'default_project', image_hash_request)
     logger.debug(insert_image_hashes_api_response)
