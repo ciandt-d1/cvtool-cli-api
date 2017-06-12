@@ -64,17 +64,14 @@ class ImageRepository(object):
             }
         }
 
-        try:
-            hit = self.es.search(index=tenant_id, doc_type=ImageData.Meta.doc_type, size=1, version=True,
-                                 body=query)
-            if hit['hits']['total'] == 0:
-                image = None
-            else:
-                image = ImageData.from_elasticsearch(hit['hits']['hits'][0])
+        hit = self.es.search(index=tenant_id, doc_type=ImageData.Meta.doc_type, size=1, version=True,
+                             body=query)
+        if hit['hits']['total'] == 0:
+            image = None
+        else:
+            image = ImageData.from_elasticsearch(hit['hits']['hits'][0])
 
-            return image
-        except TransportError as tp:
-            logger.exception('Error')
+        return image
 
     def get_all(self, tenant_id, offset=0, limit=100):
         try:

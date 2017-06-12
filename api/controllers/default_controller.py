@@ -13,3 +13,5 @@ def setup():
     ES.indices.create(index=INDEX_NAME, body=INDEX_BODY, update_all_types=True)
     return 'Up and running!'
 
+
+setup()

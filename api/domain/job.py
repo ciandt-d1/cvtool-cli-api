@@ -71,6 +71,17 @@ class JobData(Model):
     def extract_exif_annoations(self):
         return True
 
+    @property
+    def is_vision_api_enabled(self):
+        return self.input_params.get('vision_api.enable', True) if self.input_params else True
+
+    @property
+    def vision_api_features(self):
+        features = ['LANDMARK_DETECTION', 'LOGO_DETECTION', 'LABEL_DETECTION', 'IMAGE_PROPERTIES', 'SAFE_SEARCH_DETECTION']
+        if self.input_params and 'vision_api.features' in self.input_params:
+            features = self.input_params.get('vision_api.features').split(',')
+        return features
+
     def __str__(self):
         return 'JobData(id={id})'.format(id=self.id)
 
@@ -87,7 +98,7 @@ class JobData(Model):
 
 
 class JobRepository(object):
-    def __init__(self, es, index_name='kingpick'):
+    def __init__(self, es, index_name='cvtool'):
         self.es = es
         self.index_name = index_name
 
