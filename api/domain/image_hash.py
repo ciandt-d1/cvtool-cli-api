@@ -5,7 +5,7 @@ import cvtool_image_hashes_client as client
 
 logger = logging.getLogger(__name__)
 
-client.configuration.host = IMAGE_HASHES_API_HOST
+client.configuration.host = IMAGE_HASHES_API_HOST + '/v1'
 client.configuration.debug = DEBUG
 
 image_hashes_api_instance = client.DefaultApi()

@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 def from_pb(response):
-    data = json_format.MessageToJson(response)
+    data = json_format.MessageToDict(response)
     annotations = Annotations(**_process_image_annotations(response))
     annotations._raw_response = data
     return annotations
