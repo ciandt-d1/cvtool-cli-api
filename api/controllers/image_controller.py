@@ -4,12 +4,12 @@ import tempfile
 import uuid
 
 import connexion
+from google.cloud import storage
 from google.cloud._helpers import _to_bytes
-from google.cloud.bigquery import SchemaField
 
-from api.domain import image_hash
+from api.domain import image_hash, tenant as tenant_repository
 from api.domain.image import ImageRepository, ImageData
-from api.infrastructure import vision
+from api.infrastructure import vision, bigquery
 from api.infrastructure.elasticsearch import ES, INDEX_NAME
 from api.representations import Error, ImageListResponse, ImageResponse, MetaListResponse
 from .job_controller import job_repository
@@ -81,104 +81,14 @@ def list_all(tenant_id, offset=None, limit=None):
 
 
 def export(tenant_id):
-    SCHEMA = [
-        SchemaField('project_id', 'STRING', mode='NULLABLE'),
-        SchemaField('id', 'STRING', mode='REQUIRED'),
-        SchemaField('version', 'STRING', mode='REQUIRED'),
-        SchemaField('job_id', 'STRING', mode='REQUIRED'),
-        SchemaField('original_uri', 'STRING', mode='NULLABLE'),
-        SchemaField('exif_annotations', 'RECORD', mode='REPEATED', fields=[
-            SchemaField('key', 'STRING', mode='REQUIRED'),
-            SchemaField('value', 'STRING', mode='REQUIRED')
-        ]),
-
-        SchemaField('vision_annotations', 'RECORD', mode='NULLABLE', fields=[
-
-            SchemaField('safeSearchAnnotation', 'RECORD', mode='NULLABLE', fields=[
-                SchemaField('adult', 'STRING', mode='NULLABLE'),
-                SchemaField('spoof', 'STRING', mode='NULLABLE'),
-                SchemaField('medical', 'STRING', mode='NULLABLE'),
-                SchemaField('violence', 'STRING', mode='NULLABLE')
-            ]),
-
-            SchemaField('labelAnnotations', 'RECORD', mode='REPEATED', fields=[
-                SchemaField('mid', 'STRING', mode='NULLABLE'),
-                SchemaField('locale', 'STRING', mode='NULLABLE'),
-                SchemaField('description', 'STRING', mode='NULLABLE'),
-                SchemaField('score', 'FLOAT', mode='NULLABLE'),
-                SchemaField('boundingPoly', 'RECORD', mode='REPEATED', fields=[
-                    SchemaField('x', 'INTEGER', mode='NULLABLE'),
-                    SchemaField('y', 'INTEGER', mode='NULLABLE')
-                ])
-            ]),
-
-            SchemaField('landmarkAnnotations', 'RECORD', mode='REPEATED', fields=[
-                SchemaField('mid', 'STRING', mode='NULLABLE'),
-                SchemaField('locale', 'STRING', mode='NULLABLE'),
-                SchemaField('description', 'STRING', mode='NULLABLE'),
-                SchemaField('score', 'FLOAT', mode='NULLABLE'),
-                SchemaField('boundingPoly', 'RECORD', mode='REPEATED', fields=[
-                    SchemaField('x', 'INTEGER', mode='NULLABLE'),
-                    SchemaField('y', 'INTEGER', mode='NULLABLE')
-                ])
-            ]),
-
-            SchemaField('logoAnnotations', 'RECORD', mode='REPEATED', fields=[
-                SchemaField('mid', 'STRING', mode='NULLABLE'),
-                SchemaField('locale', 'STRING', mode='NULLABLE'),
-                SchemaField('description', 'STRING', mode='NULLABLE'),
-                SchemaField('score', 'FLOAT', mode='NULLABLE'),
-                SchemaField('boundingPoly', 'RECORD', mode='REPEATED', fields=[
-                    SchemaField('x', 'INTEGER', mode='NULLABLE'),
-                    SchemaField('y', 'INTEGER', mode='NULLABLE')
-                ])
-            ]),
-
-            SchemaField('imagePropertiesAnnotation', 'RECORD', mode='NULLABLE', fields=[
-                SchemaField('dominantColors', 'RECORD', mode='NULLABLE', fields=[
-                    SchemaField('colors', 'RECORD', mode='REPEATED', fields=[
-                        SchemaField('pixelFraction', 'FLOAT', mode='NULLABLE'),
-                        SchemaField('score', 'FLOAT', mode='NULLABLE'),
-                        SchemaField('color', 'RECORD', mode='NULLABLE', fields=[
-                            SchemaField('red', 'FLOAT', mode='NULLABLE'),
-                            SchemaField('green', 'FLOAT', mode='NULLABLE'),
-                            SchemaField('blue', 'FLOAT', mode='NULLABLE'),
-                            SchemaField('alpha', 'FLOAT', mode='NULLABLE')
-                        ]),
-                    ])
-                ])
-            ]),
-
-            SchemaField('cropHintsAnnotation', 'RECORD', mode='REPEATED', fields=[
-                SchemaField('importanceFraction', 'FLOAT', mode='NULLABLE'),
-                SchemaField('confidence', 'FLOAT', mode='NULLABLE'),
-                SchemaField('cropHints', 'RECORD', mode='REPEATED', fields=[
-                    SchemaField('boundingPoly', 'RECORD', mode='REPEATED', fields=[
-                        SchemaField('x', 'INTEGER', mode='NULLABLE'),
-                        SchemaField('y', 'INTEGER', mode='NULLABLE')
-                    ])
-                ])
-            ]),
-
-            SchemaField('textAnnotations', 'RECORD', mode='REPEATED', fields=[
-                SchemaField('description', 'STRING', mode='NULLABLE'),
-                SchemaField('locale', 'STRING', mode='NULLABLE'),
-                SchemaField('boundingPoly', 'RECORD', mode='REPEATED', fields=[
-                    SchemaField('x', 'INTEGER', mode='NULLABLE'),
-                    SchemaField('y', 'INTEGER', mode='NULLABLE')
-                ])
-            ])
-
-        ])
-    ]
+    tenant = tenant_repository.get_by_id(tenant_id)
 
     offset = 0
     limit = 100
     file_name = str(uuid.uuid4())
-    bucket_name = 'cvtool-working-bucket'  # TODO: Remove this from the code
+    bucket_name = tenant.staging_bucket
 
     logger.info('Starting export for tenant: %s', tenant_id)
-
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(bucket_name)
     blob_name = 'image-export/{tenant_id}/{export_id}.json'.format(tenant_id=tenant_id, export_id=file_name)
@@ -217,36 +127,7 @@ def export(tenant_id):
 
     logger.info('Images exported and stored on: %s', blob.path)
 
-    bq_client = bigquery.Client()
+    source_uri = 'gs://{}/{}'.format(bucket_name, blob_name)
+    job = bigquery.load_table_from_json(tenant, source_uri)
 
-    dataset = bq_client.dataset(tenant_id)
-    if not dataset.exists():
-        dataset.create()
-
-    bq_table = dataset.table('images', SCHEMA)
-
-    if bq_table.exists():
-        bq_table.delete()
-    if not bq_table.exists():
-        bq_table.create()
-
-    source_uri = 'gs://{}/image-export/{}/{}.json'.format(bucket_name, tenant_id, file_name)
-
-    job = bq_client.load_table_from_storage(str(uuid.uuid4()), bq_table, source_uri)
-    job.source_format = 'NEWLINE_DELIMITED_JSON'
-    job.write_disposition = 'WRITE_TRUNCATE'
-
-    logger.info('Starting job')
-    job.begin()
-
-    # retry_count = 100
-    # while retry_count > 0 and job.state != 'DONE':
-    #     retry_count -= 1
-    #     time.sleep(10)
-    #     logger.info('Reloading %s', job)
-    #     job.reload()  # API call
-
-    logger.info('%s', job)
-    logger.info('%s, %s, %s, %s', job.name, job.job_type, job.created, job.state)
-
-    return 'Ok', 200
+    return 'Ok', 202
