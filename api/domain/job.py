@@ -78,7 +78,7 @@ class JobData(Model):
     @property
     def vision_api_features(self):
         features = ['LANDMARK_DETECTION', 'LOGO_DETECTION', 'LABEL_DETECTION', 'IMAGE_PROPERTIES', 'SAFE_SEARCH_DETECTION']
-        if self.input_params and 'vision_api.features' in self.input_params:
+        if self.input_params and self.input_params.get('vision_api.features', None) is not None:
             features = self.input_params.get('vision_api.features').split(',')
         return features
 

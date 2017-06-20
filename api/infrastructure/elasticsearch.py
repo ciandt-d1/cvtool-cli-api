@@ -7,7 +7,8 @@ TENANT_DOC_TYPE = 'tenant'
 PROJECT_DOC_TYPE = 'project'
 INDEX_BODY = {
     "settings": {
-        "number_of_shards": 10
+        "number_of_shards": 10,
+        "max_result_window" : 500000
     },
     "mappings": {
         TENANT_DOC_TYPE: {
@@ -103,7 +104,7 @@ INDEX_BODY = {
                     "index": True
                 },
 
-                "parameters": {
+                "input_params": {
                     "type": "object",
                     "dynamic": True
                 }
@@ -251,7 +252,7 @@ INDEX_BODY = {
                     "type": "object",
                     "dynamic": True,
                     "properties": {
-                        "parent_id": {"type": "keyword"}
+                        "tenant_id": {"type": "keyword"}
                     }
                 }
             }

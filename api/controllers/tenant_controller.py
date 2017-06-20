@@ -1,7 +1,7 @@
 import connexion
 from elasticsearch import TransportError
 
-from api.domain.tenant import TenantData
+from api.domain.tenant import TenantData, get_all
 from api.infrastructure.elasticsearch import ES, INDEX_NAME
 from api.representations.tenant import Tenant
 from api.representations.tenants import Tenants
@@ -31,8 +31,8 @@ def get_tenants():
 
     :rtype: Tenants
     """
-    hits = ES.search(index=INDEX_NAME, doc_type=TenantData.Meta.doc_type, version=True)
-    tenants = list(map(lambda hit: Tenant.from_dict(hit.get('_source')), hits.get('hits', {'hits': []}).get('hits')))
+    total, all_tenants = get_all()
+    tenants = [Tenant.from_dict(tnt.to_primitive()) for tnt in all_tenants]
     return Tenants(items=tenants)
 
 
@@ -63,6 +63,25 @@ def post_tenant(tenant):
         }
         ES.indices.put_alias(index=INDEX_NAME, name=alias_name, body=alias_cfg)
         return tenant, 201
+
+
+def delete_tenant(tenant_id):
+    """
+    put_tenant
+    updates a tenant
+    :param tenant_id: tenant id
+    :type tenant_id: str
+    :param tenant: Tenant to update
+    :type tenant: dict | bytes
+
+    :rtype: Tenant
+    """
+    if connexion.request.is_json:
+        # TODO delete all tenant's documents (image, hashes, project, job, tenant) and finally the alias
+        ES.delete_by_query()
+        ES.indices.delete_alias(index=INDEX_NAME, name=tenant_id, ignore=[404])
+        tenant = Tenant.from_dict(connexion.request.get_json())
+    return 'do some magic!'
 
 
 def put_tenant(tenant_id, tenant):

@@ -49,6 +49,7 @@ class TenantData(Model):
         if 'gcs_staging_bucket' not in self.settings:
             raise ValueError('Missing "gcs_staging_bucket" in tenant settings')
 
+
 class TenantRepository(object):
 
     def __init__(self, es, index_name='cvtool'):
@@ -64,9 +65,26 @@ class TenantRepository(object):
             logger.exception('Error')
             raise tp
 
+    def get_all(self, offset=0, limit=100):
+        try:
+            result = ES.search(index=self.index_name, doc_type=TenantData.Meta.doc_type, from_=offset, size=limit, version=True)
+            total = result['hits']['total']
+            if total == 0:
+                tenant_list = []
+            else:
+                tenant_list = [TenantData.from_elasticsearch(hit) for hit in result['hits']['hits']]
+
+            return total, tenant_list
+        except TransportError as tp:
+            logger.exception('Error')
+            raise tp
 
 _tenant_repository = TenantRepository(ES, INDEX_NAME)
 
 
 def get_by_id(tenant_id):
     return _tenant_repository.get_by_id(tenant_id)
+
+
+def get_all():
+    return _tenant_repository.get_all()
