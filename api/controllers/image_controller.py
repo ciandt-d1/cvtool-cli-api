@@ -32,20 +32,20 @@ def add(tenant_id, image_request):
 
     if connexion.request.is_json:
         image = ImageData(image_request, strict=False)
-
         if image_repository.get_by_original_uri(tenant_id, image.original_uri) is None:
-
             similar_image_uri = image_hash.exists_similar_image(tenant_id, image)
-
             if not similar_image_uri:
                 job = job_repository.get_by_id(tenant_id, image.job_id)
-                vision_result = vision.detect(image, job.vision_api_features)
-                image.vision_annotations = json.dumps(vision_result.raw_response)
+                if image_request.run_vision_api:
+                    vision_result = vision.detect(image, job.vision_api_features)
+                    image.vision_annotations = json.dumps(vision_result.raw_response)
                 image_hash.add(tenant_id, image)
             else:
-                logger.info('Similar image was already ingested, cloning vision API data')
-                image_already_ingested = image_repository.get_by_original_uri(tenant_id, similar_image_uri)
-                image.vision_annotations = image_already_ingested.vision_annotations
+                if image_request.run_vision_api:
+                    logger.info('Similar image was already ingested, cloning vision API data')
+                    image_already_ingested = image_repository.get_by_original_uri(tenant_id, similar_image_uri)
+                    if image_request.run_vision_api:
+                        image.vision_annotations = image_already_ingested.vision_annotations
                 image.similar = image_already_ingested.original_uri
 
             # Adding image to repository

@@ -586,6 +586,9 @@ definitions:
       original_uri:
         type: "string"
         description: "The image to add to the database."
+      run_vision_api:
+        type: "boolean"
+        description: "process image with Vision API?"
       annotations:
         $ref: "#/definitions/Annotations"
       exif_annotations:
