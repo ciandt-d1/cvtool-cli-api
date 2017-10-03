@@ -11,7 +11,7 @@ from api.domain import image_hash, tenant as tenant_repository
 from api.domain.image import ImageRepository, ImageData
 from api.infrastructure import vision, bigquery
 from api.infrastructure.elasticsearch import ES, INDEX_NAME
-from api.representations import Error, ImageListResponse, ImageResponse, MetaListResponse
+from api.representations import AnnotationRequest, Error, ImageListResponse, ImageResponse, MetaListResponse
 from .job_controller import job_repository
 
 logger = logging.getLogger(__name__)
@@ -131,3 +131,19 @@ def export(tenant_id):
     job = bigquery.load_table_from_json(tenant, source_uri)
 
     return 'Ok', 202
+
+
+def annotate(tenant_id, annotation_request):
+    """
+    annotate
+    Add or change annotations to one or more images.
+    :param tenant_id: tenant id
+    :type tenant_id: str
+    :param annotation_request: Annotations to be associated with image(s)
+    :type annotation_request: dict | bytes
+
+    :rtype: None
+    """
+    if connexion.request.is_json:
+        annotation_request = AnnotationRequest.from_dict(connexion.request.get_json())
+    return 'do some magic!'
