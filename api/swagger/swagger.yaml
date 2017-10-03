@@ -134,6 +134,37 @@ paths:
           schema:
             $ref: "#/definitions/Error"
       x-swagger-router-controller: "api.controllers.image_controller"
+  /images/annotate:
+    post:
+      tags:
+      - "image"
+      description: "Add or change annotations to one or more images."
+      operationId: "annotate"
+      parameters:
+      - name: "tenant_id"
+        in: "query"
+        description: "tenant id"
+        required: true
+        type: "string"
+        maxLength: 64
+        minLength: 3
+        pattern: "[a-z0-9-_\\.]{3,64}"
+        x-regex: "[a-z0-9-_\\\\.]{3,64}"
+        x-modifiers: []
+      - in: "body"
+        name: "annotation_request"
+        description: "Annotations to be associated with image(s)"
+        required: true
+        schema:
+          $ref: "#/definitions/AnnotationRequest"
+      responses:
+        200:
+          description: "The newly inserted annotations"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Error"
+      x-swagger-router-controller: "api.controllers.image_controller"
   /tenants:
     get:
       tags:
@@ -586,9 +617,24 @@ definitions:
       original_uri:
         type: "string"
         description: "The image to add to the database."
+      run_vision_api:
+        type: "boolean"
+        description: "process image with Vision API?"
+        default: true
       annotations:
         $ref: "#/definitions/Annotations"
       exif_annotations:
+        $ref: "#/definitions/Annotations"
+  AnnotationRequest:
+    type: "object"
+    properties:
+      ids:
+        type: "array"
+        description: "Id of images to annotate."
+        uniqueItems: true
+        items:
+          type: "string"
+      annotations:
         $ref: "#/definitions/Annotations"
   Tenants:
     properties:
