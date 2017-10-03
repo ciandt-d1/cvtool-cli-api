@@ -18,3 +18,4 @@ from .settings import Settings
 from .tenant import Tenant
 from .tenants import Tenants
 from .vision_annotations import VisionAnnotations
+from .annotation_request import AnnotationRequest
