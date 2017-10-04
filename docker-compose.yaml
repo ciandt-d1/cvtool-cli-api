@@ -2,17 +2,22 @@ version: '2'
 services:
   web:
     build: .
-    image: gcr.io/ciandt-cognitive-sandbox/cvtool/cli-api:local
+    image: deeone/aquila/cli-api:local
     container_name: cli-api
     ports:
     - "5000:8080"
     volumes:
     - .:/usr/src/app
+    - ~/.config/gcloud/:/root/.config/gcloud
     environment:
      - ELASTICSEARCH_URL=http://elasticsearch:9200
+     - GOOGLE_CLOUD_PROJECT=${GCP_PROJECT_ID}
+     - IMAGE_INGESTION_PIPELINE_URI=http://image-ingestion
+     - IMAGE_HASHES_API_HOST=http://image-hash-api
      - DEBUG=true
     depends_on:
      - "elasticsearch"
+    command: python run.py
 
   elasticsearch:
       image: docker.elastic.co/elasticsearch/elasticsearch:5.2.2
