@@ -129,13 +129,12 @@ def export(tenant_id):
 
     source_uri = 'gs://{}/{}'.format(bucket_name, blob_name)
     job = bigquery.load_table_from_json(tenant, source_uri)
-
     return 'Ok', 202
 
 
-def annotate(tenant_id, annotation_request):
+def add_annotations(tenant_id, annotation_request):
     """
-    annotate
+    add_annotation
     Add or change annotations to one or more images.
     :param tenant_id: tenant id
     :type tenant_id: str
@@ -145,5 +144,25 @@ def annotate(tenant_id, annotation_request):
     :rtype: None
     """
     if connexion.request.is_json:
-        annotation_request = AnnotationRequest.from_dict(connexion.request.get_json())
-    return 'do some magic!'
+        image_repository.add_annotations(tenant_id, annotation_request.ids, annotation_request.annotations)
+        return 'Ok', 202
+    else:
+        return Error(code=400, message='Invalid payload'), 400
+
+
+def remove_annotations(tenant_id, annotation_request):
+    """
+    remove_annotation
+    Remove annotations to one or more images.
+    :param tenant_id: tenant id
+    :type tenant_id: str
+    :param annotation_request: Annotations to be removed from image(s)
+    :type annotation_request: dict | bytes
+
+    :rtype: None
+    """
+    if connexion.request.is_json:
+        image_repository.remove_annotations(tenant_id, annotation_request.ids, annotation_request.annotations)
+        return 'Ok', 202
+    else:
+        return Error(code=400, message='Invalid payload'), 400

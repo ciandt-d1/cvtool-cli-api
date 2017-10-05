@@ -1,5 +1,6 @@
 import logging
 
+from elasticsearch import helpers
 from elasticsearch import TransportError
 from schematics.models import Model
 from schematics.transforms import blacklist
@@ -51,6 +52,50 @@ class ImageRepository(object):
             return image
         except TransportError as tp:
             logger.exception('Error')
+
+    def add_annotations(self, tenant_id, ids, annotations):
+        query = {
+            "script": {
+                "inline": "ctx._source.annotations.putAll(params.annotations)",
+                "params": {
+                    "annotations": annotations
+                }
+            }
+        }
+        actions = []
+        for image_id in ids:
+            action = {
+                '_op_type': 'update',
+                '_index': tenant_id,
+                '_type': ImageData.Meta.doc_type,
+                '_id': image_id,
+                "_source": query
+            }
+            actions.append(action)
+        if action:
+            helpers.bulk(self.es, actions)
+
+    def remove_annotations(self, tenant_id, ids, annotations):
+        query = {
+            "script": {
+                "inline": "ctx._source.annotations.keySet().removeAll(params.keys)",
+                "params": {
+                    "keys": annotations.keys()
+                }
+            }
+        }
+        actions = []
+        for image_id in ids:
+            action = {
+                '_op_type': 'update',
+                '_index': tenant_id,
+                '_type': ImageData.Meta.doc_type,
+                '_id': image_id,
+                "_source": query
+            }
+            actions.append(action)
+        if action:
+            helpers.bulk(self.es, actions)
 
     def get_by_original_uri(self, tenant_id, original_uri):
 
