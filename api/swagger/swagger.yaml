@@ -780,3 +780,6 @@ definitions:
         type: "string"
         format: "date-time"
         description: "Job last update"
+x-google-endpoints:
+- name: "kingpick-admin-api.endpoints.ciandt-cognitive-sandbox.cloud.goog"
+  allowCors: "true"
