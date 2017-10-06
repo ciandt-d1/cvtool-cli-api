@@ -53,7 +53,7 @@ class ImageRepository(object):
         except TransportError as tp:
             logger.exception('Error')
 
-    def add_annotations(self, tenant_id, ids, annotations):
+    def add_annotations(self, tenant_id, id_versions, annotations):
         query = {
             "script": {
                 "inline": "ctx._source.annotations.putAll(params.annotations)",
@@ -62,20 +62,9 @@ class ImageRepository(object):
                 }
             }
         }
-        actions = []
-        for image_id in ids:
-            action = {
-                '_op_type': 'update',
-                '_index': tenant_id,
-                '_type': ImageData.Meta.doc_type,
-                '_id': image_id,
-                "_source": query
-            }
-            actions.append(action)
-        if action:
-            helpers.bulk(self.es, actions)
+        self._bulk_update_indexed_image(tenant_id, id_versions, query)
 
-    def remove_annotations(self, tenant_id, ids, annotations):
+    def remove_annotations(self, tenant_id, id_versions, annotations):
         query = {
             "script": {
                 "inline": "ctx._source.annotations.keySet().removeAll(params.keys)",
@@ -84,18 +73,7 @@ class ImageRepository(object):
                 }
             }
         }
-        actions = []
-        for image_id in ids:
-            action = {
-                '_op_type': 'update',
-                '_index': tenant_id,
-                '_type': ImageData.Meta.doc_type,
-                '_id': image_id,
-                "_source": query
-            }
-            actions.append(action)
-        if action:
-            helpers.bulk(self.es, actions)
+        self._bulk_update_indexed_image(tenant_id, id_versions, query)
 
     def get_by_original_uri(self, tenant_id, original_uri):
 
@@ -126,10 +104,7 @@ class ImageRepository(object):
                 image_list = []
             else:
                 image_list = [ImageData.from_elasticsearch(hit) for hit in result['hits']['hits']]
-
             return total, image_list
-
-
         except TransportError as tp:
             logger.exception('Error')
             raise tp
@@ -145,3 +120,20 @@ class ImageRepository(object):
         except TransportError as tp:
             logger.exception('Error')
             raise tp
+
+    def _bulk_update_indexed_image(self, tenant_id, id_versions, query):
+        actions = []
+        for k, v in id_versions.items():
+            action = {
+                '_op_type': 'update',
+                '_index': tenant_id,
+                '_type': ImageData.Meta.doc_type,
+                '_id': k,
+                '_source': query,
+                '_version': v
+            }
+            actions.append(action)
+        if actions:
+            helpers.bulk(self.es, actions)
+
+

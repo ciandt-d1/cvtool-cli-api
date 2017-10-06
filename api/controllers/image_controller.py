@@ -11,7 +11,7 @@ from api.domain import image_hash, tenant as tenant_repository
 from api.domain.image import ImageRepository, ImageData
 from api.infrastructure import vision, bigquery
 from api.infrastructure.elasticsearch import ES, INDEX_NAME
-from api.representations import AnnotationRequest, Error, ImageListResponse, ImageResponse, MetaListResponse
+from api.representations import AnnotationRequest, Error, ImageListResponse, ImageRequest, ImageResponse, MetaListResponse
 from .job_controller import job_repository
 
 logger = logging.getLogger(__name__)
@@ -31,21 +31,21 @@ def add(tenant_id, image_request):
     """
 
     if connexion.request.is_json:
+        request = ImageRequest.from_dict(connexion.request.get_json())
         image = ImageData(image_request, strict=False)
         if image_repository.get_by_original_uri(tenant_id, image.original_uri) is None:
             similar_image_uri = image_hash.exists_similar_image(tenant_id, image)
             if not similar_image_uri:
                 job = job_repository.get_by_id(tenant_id, image.job_id)
-                if image_request.run_vision_api:
+                if request.run_vision_api:
                     vision_result = vision.detect(image, job.vision_api_features)
                     image.vision_annotations = json.dumps(vision_result.raw_response)
                 image_hash.add(tenant_id, image)
             else:
-                if image_request.run_vision_api:
-                    logger.info('Similar image was already ingested, cloning vision API data')
-                    image_already_ingested = image_repository.get_by_original_uri(tenant_id, similar_image_uri)
-                    if image_request.run_vision_api:
-                        image.vision_annotations = image_already_ingested.vision_annotations
+                logger.info('Similar image was already ingested, cloning vision API data')
+                image_already_ingested = image_repository.get_by_original_uri(tenant_id, similar_image_uri)
+                if request.run_vision_api:
+                    image.vision_annotations = image_already_ingested.vision_annotations
                 image.similar = image_already_ingested.original_uri
 
             # Adding image to repository
@@ -132,37 +132,33 @@ def export(tenant_id):
     return 'Ok', 202
 
 
-def add_annotations(tenant_id, annotation_request):
+def add_annotations(tenant_id):
     """
     add_annotation
     Add or change annotations to one or more images.
     :param tenant_id: tenant id
     :type tenant_id: str
-    :param annotation_request: Annotations to be associated with image(s)
-    :type annotation_request: dict | bytes
-
     :rtype: None
     """
     if connexion.request.is_json:
-        image_repository.add_annotations(tenant_id, annotation_request.ids, annotation_request.annotations)
+        request = AnnotationRequest.from_dict(connexion.request.get_json())
+        image_repository.add_annotations(tenant_id, request.id_versions, request.annotations)
         return 'Ok', 202
     else:
         return Error(code=400, message='Invalid payload'), 400
 
 
-def remove_annotations(tenant_id, annotation_request):
+def remove_annotations(tenant_id):
     """
     remove_annotation
     Remove annotations to one or more images.
     :param tenant_id: tenant id
     :type tenant_id: str
-    :param annotation_request: Annotations to be removed from image(s)
-    :type annotation_request: dict | bytes
-
     :rtype: None
     """
     if connexion.request.is_json:
-        image_repository.remove_annotations(tenant_id, annotation_request.ids, annotation_request.annotations)
+        request = AnnotationRequest.from_dict(connexion.request.get_json())
+        image_repository.remove_annotations(tenant_id, request.id_versions, request.annotations)
         return 'Ok', 202
     else:
         return Error(code=400, message='Invalid payload'), 400

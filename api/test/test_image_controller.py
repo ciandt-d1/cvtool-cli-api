@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import
 
+from api.representations.annotation_request import AnnotationRequest
 from api.representations.error import Error
 from api.representations.image_list_response import ImageListResponse
 from api.representations.image_request import ImageRequest
@@ -45,6 +46,37 @@ class TestImageController(BaseTestCase):
                                     query_string=query_string)
         self.assert200(response, "Response body is : " + response.data.decode('utf-8'))
 
+
+def test_add_annotations(self):
+        """
+        Test case for add_annotations
+
+        
+        """
+        annotation_request = AnnotationRequest()
+        query_string = [('tenant_id', 'tenant_id_example')]
+        response = self.client.open('/v1/images/annotations/add',
+                                    method='PUT',
+                                    data=json.dumps(annotation_request),
+                                    content_type='application/json',
+                                    query_string=query_string)
+        self.assert200(response, "Response body is : " + response.data.decode('utf-8'))
+
+
+def test_remove_annotations(self):
+        """
+        Test case for remove_annotations
+
+        
+        """
+        annotation_request = AnnotationRequest()
+        query_string = [('tenant_id', 'tenant_id_example')]
+        response = self.client.open('/v1/images/annotations/remove',
+                                    method='PUT',
+                                    data=json.dumps(annotation_request),
+                                    content_type='application/json',
+                                    query_string=query_string)
+        self.assert200(response, "Response body is : " + response.data.decode('utf-8'))
 
 if __name__ == '__main__':
     import unittest

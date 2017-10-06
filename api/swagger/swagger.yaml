@@ -659,14 +659,14 @@ definitions:
   AnnotationRequest:
     type: "object"
     properties:
-      ids:
-        type: "array"
-        description: "Id of images to annotate."
-        uniqueItems: true
-        items:
-          type: "string"
+      id_versions:
+        $ref: "#/definitions/ImageIdVersion"
       annotations:
         $ref: "#/definitions/Annotations"
+  ImageIdVersion:
+    type: "object"
+    additionalProperties:
+      type: "string"
   Tenants:
     properties:
       items:
@@ -811,3 +811,6 @@ definitions:
         type: "string"
         format: "date-time"
         description: "Job last update"
+x-google-endpoints:
+- name: "kingpick-admin-api.endpoints.ciandt-cognitive-sandbox.cloud.goog"
+  allowCors: "true"
