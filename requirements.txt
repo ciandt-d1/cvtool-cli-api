@@ -9,3 +9,4 @@ git+https://github.com/ciandt-d1/cvtool-image-hashes-client.git
 google-cloud-storage
 google-cloud-bigquery
 flask-cors
+cryptography == 2.0.3

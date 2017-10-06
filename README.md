@@ -48,6 +48,14 @@ docker build -t kingpick .
 docker run -p 8080:8080 kingpick
 ```
 
+## Running with docker-compose
+
+
+```bash
+ export GCP_PROJECT_ID=proj && docker-compose up
+
+```
+
 ## Tenants
 
 ```
