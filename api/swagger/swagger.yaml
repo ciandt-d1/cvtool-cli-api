@@ -548,6 +548,54 @@ paths:
         202:
           description: "The newly created image"
       x-swagger-router-controller: "api.controllers.job_controller"
+  /search/images:
+    post:
+      tags:
+      - "search"
+      description: "Search for images."
+      operationId: "search_images"
+      parameters:
+      - name: "tenant_id"
+        in: "query"
+        description: "tenant id"
+        required: true
+        type: "string"
+        maxLength: 64
+        minLength: 3
+        pattern: "[a-z0-9-_\\.]{3,64}"
+        x-regex: "[a-z0-9-_\\\\.]{3,64}"
+        x-modifiers: []
+      - name: "offset"
+        in: "query"
+        description: "offset"
+        required: false
+        type: "integer"
+        minimum: 0
+        format: "int32"
+      - name: "limit"
+        in: "query"
+        description: "limit"
+        required: false
+        type: "integer"
+        maximum: 100
+        minimum: 1
+        format: "int32"
+      - in: "body"
+        name: "query"
+        description: "Image search query."
+        required: true
+        schema:
+          $ref: "#/definitions/ImageSearchRequest"
+      responses:
+        200:
+          description: "Image search result"
+          schema:
+            $ref: "#/definitions/ImageListResponse"
+        default:
+          description: "Unexpected error"
+          schema:
+            $ref: "#/definitions/Error"
+      x-swagger-router-controller: "api.controllers.search_controller"
 securityDefinitions:
   google_id_token:
     type: "oauth2"
@@ -811,6 +859,12 @@ definitions:
         type: "string"
         format: "date-time"
         description: "Job last update"
+  ImageSearchRequest:
+    type: "object"
+    properties:
+      custom_query:
+        type: "string"
+        description: "Search query."
 x-google-endpoints:
 - name: "kingpick-admin-api.endpoints.ciandt-cognitive-sandbox.cloud.goog"
   allowCors: "true"

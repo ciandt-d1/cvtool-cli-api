@@ -1,4 +1,5 @@
 import logging
+import json
 
 from elasticsearch import helpers
 from elasticsearch import TransportError
@@ -117,6 +118,43 @@ class ImageRepository(object):
             image.id = result.get('_id')
             image.version = result.get('_version')
             return image
+        except TransportError as tp:
+            logger.exception('Error')
+            raise tp
+
+    def search(self, tenant_id, query, offset=0, limit=100):
+        final_query = {
+            'query': {
+                'bool': {
+                    'filter': [
+                        {
+                            'type': {
+                                'value': ImageData.Meta.doc_type
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+        valid_clause = ['must', 'must_not', 'should']
+        query_dict = json.loads(query)
+        query_bool_dict = query_dict.get('query', {}).get('bool', {})
+        for k, v in query_bool_dict.items():
+            if k in valid_clause:
+                final_query.get('query', {}).get('bool', {}).update({k: v})
+        source_include = query_dict.get('_source',
+                                         ['tenant_id', 'job_id', 'uri', 'height', 'width', 'size', 'similar',
+                                          'annotations'])
+        try:
+            result = self.es.search(index=tenant_id, doc_type=ImageData.Meta.doc_type,
+                                    from_=offset, size=limit, body=final_query,
+                                    _source_include=source_include, version=True)
+            total = result['hits']['total']
+            if total == 0:
+                image_list = []
+            else:
+                image_list = [ImageData.from_elasticsearch(hit) for hit in result['hits']['hits']]
+            return total, image_list
         except TransportError as tp:
             logger.exception('Error')
             raise tp
